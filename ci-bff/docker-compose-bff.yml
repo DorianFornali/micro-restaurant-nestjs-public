@@ -1,14 +1,16 @@
-version: '3.8'
+version: "3"
 
 services:
-  quarkus-app:
-    build:
-      context: .
-      dockerfile: src/main/docker/Dockerfile.jvm
+  BFF:
+    image: "nestjs-restaurant/bff"
+    restart: always
     ports:
-      - "8080:8080"
+      - 8080:8080
     environment:
-      - JAVA_OPTS_APPEND=-Dquarkus.http.host=0.0.0.0
-    volumes:
-      - ./target/quarkus-app:/deployments
-    entrypoint: [ "/opt/jboss/container/java/run/run-java.sh" ]
+      - MENU_SERVICE_URL_WITH_PORT=${MENU_SERVICE}:3000
+      - KITCHEN_SERVICE_URL_WITH_PORT=${KITCHEN_SERVICE}:3000
+    networks:
+      - nestjs-restaurant-network
+networks:
+  nestjs-restaurant-network:
+    driver: bridge

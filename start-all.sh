@@ -11,3 +11,5 @@ docker-compose --env-file ./.env.docker \
 
 wait_on_health http://localhost:9500 gateway
 echo "all services started behind gateway"
+
+cd ci-bff && ./start.sh

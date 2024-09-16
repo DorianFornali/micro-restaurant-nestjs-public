@@ -11,3 +11,14 @@ function wait_on_health()  # $1 is URL of the NestJS service with health endpoin
    done
    echo "$2 service is up and running at $1"
 }
+
+function wait_on_health_bff()
+{
+    local response
+    until response=$(curl --silent "$1"/health) && [[ $response == *"i am healthy"* ]]
+    do
+        echo "BFF service not ready at $1. Response: $response"
+        sleep 3
+    done
+    echo "BFF service is up and running at $1. Response: $response"
+}

@@ -8,3 +8,5 @@ docker-compose --env-file ./.env.docker \
                --file gateway/docker-compose-gateway.yml down
 
 echo "all services stopped behind gateway"
+
+cd ci-bff && ./stop.sh

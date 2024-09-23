@@ -1,59 +1,61 @@
 package com.padd.controllers;
 
+import com.padd.BFFService;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
+@Path("/dining")
 public class DiningController {
 
-    @POST
-    @Path("/newOrder")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String postNewOrder() {
-        /*
-
-        The body contains the list of commanded items for a given table numero.
-        These items will be marked as supplements or not.
-        We will store Map<NumeroTable, (idTableOrder + List<Produits> + supplements)
-        At receive, we store the tagged suplements in the supplements list, and remove
-        these fields from the products.
-        If we see any drink we put them in the tableOrder == http post /tableOrders with
-        the table number and the list of drinks.
-        --> This will create the preparations etc
+    // ------------ Command flow related endpoints ------------
 
 
-         */
-        return "";
+    private BFFService bffService;
+
+    @Inject
+    public DiningController(BFFService bffService) {
+        this.bffService = bffService;
     }
 
 
+    @POST
+    @Path("/newOrder")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response postNewOrder(String orderDetails) {
+        bffService.handleIncomingOrder(orderDetails);
+        return Response.ok("Order received").build();
+    }
+
+    // ------------ Payment flow related endpoints ------------
 
     @GET
     @Path("/supplements/{numTable}")
     @Produces(MediaType.TEXT_PLAIN)
-    public String getTableOrder(@PathParam("numTable") int numTable) {
+    public Response getTableOrder(@PathParam("numTable") int numTable) {
         /*
-
         Ici on cherche a obtenir tous les supplements pour une table donnee
         On retourne simplement la liste des supplements stockées pour la table
         Aucun appel au backend
-
          */
-        return "test";
+        // Retrieve supplements for the given table number
+        return Response.ok("Supplements for table " + numTable).build();
     }
 
     @POST
     @Path("/supplements/{numTable}/pay")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
-    public String postTableOrderPay(@PathParam("numTable") int numTable) {
+    public Response postTableOrderPay(@PathParam("numTable") int numTable, String paymentDetails) {
         /*
-
         Paiement pour les supplements d'une table, pas forcmeent tous:
         On recoit une liste de menuItems et on les enleve de la liste des supplements
         PUIS check sur la liste des supplements, si elle est vide tout a ete reglé, donc
         a ce moment la on fait un appel /tableOrders/{id}/bill pour cloturer la commande
-
          */
-        return "";
+        // Process the paymentDetails here
+        return Response.ok("Payment processed for table " + numTable).build();
     }
-
 }

@@ -8,23 +8,38 @@ public class MenuController {
     @Path("/menus")
     @Produces(MediaType.TEXT_PLAIN)
     public String getMenu() {
-        //TODO! HTTP GET to the menu service
+        /*
+
+        Ici on effectue un simple GET HTTP au menu service et on renvoie ce qu'on recoit
+        */
         return "test";
     }
 
     @POST
     @Path("/menus")
     @Produces(MediaType.TEXT_PLAIN)
-    public boolean postMenuItem() {
-        //TODO! HTTP POST to the menu service returns TRUE if successful
-        return true;
+    public String postMenuItem() {
+        /*
+
+        On ajoute un item a la carte
+        Ici on effectue un simple POST HTTP au menu service et on renvoie ce qu'on recoit
+
+        */
+
+
+        return "";
     }
 
     @GET
     @Path("/menus/{id}")
     @Produces(MediaType.TEXT_PLAIN)
     public String getMenuItem(@PathParam("id") int id) {
-        //TODO! HTTP GET to the menu service
+
+        /*
+
+        Simple appel GET HTTP au menu service pour obtenir un item de la carte
+
+         */
         return "test";
     }
 }

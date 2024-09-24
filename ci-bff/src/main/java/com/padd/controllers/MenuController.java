@@ -1,5 +1,10 @@
 package com.padd.controllers;
 
+import com.padd.BFFService;
+import com.padd.bridge.RestaurantService;
+import com.padd.model.MenuItem;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -7,15 +12,20 @@ import jakarta.ws.rs.core.Response;
 @Path("/menu")
 public class MenuController {
 
+    BFFService bffService;
+
+    @Inject
+    public MenuController(BFFService bffService) {
+        this.bffService = bffService;
+    }
+
     @GET
     @Path("/menus")
     @Produces(MediaType.TEXT_PLAIN)
     public Response getMenu() {
-        /*
-        Ici on effectue un simple GET HTTP au menu service et on renvoie ce qu'on recoit
-        */
-        // Implement the logic to get the menu here
-        return Response.ok("Menu list").build();
+        System.out.println("Request received on BFF to GET menus");
+        return Response.ok(bffService.getBridgeToService().httpGet(RestaurantService.MENU, "menus")).build();
+
     }
 
     @POST
@@ -23,22 +33,15 @@ public class MenuController {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
     public Response postMenuItem(String menuItem) {
-        /*
-        On ajoute un item a la carte
-        Ici on effectue un simple POST HTTP au menu service et on renvoie ce qu'on recoit
-        */
-        // Implement the logic to post a new menu item here
-        return Response.ok("Menu item added").build();
+        return(Response.ok(bffService.getBridgeToService().
+                httpPost(RestaurantService.MENU, "menus", menuItem)).build());
+
     }
 
     @GET
     @Path("/menus/{id}")
     @Produces(MediaType.TEXT_PLAIN)
-    public Response getMenuItem(@PathParam("id") int id) {
-        /*
-        Simple appel GET HTTP au menu service pour obtenir un item de la carte
-         */
-        // Implement the logic to get a specific menu item here
-        return Response.ok("Menu item with ID: " + id).build();
+    public Response getMenuItem(@PathParam("id") String id) {
+        return Response.ok(bffService.getBridgeToService().httpGet(RestaurantService.MENU, "menus/" + id)).build();
     }
 }

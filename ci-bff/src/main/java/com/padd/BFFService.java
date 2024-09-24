@@ -10,6 +10,7 @@ import com.padd.model.MenuItem;
 import com.padd.model.OrderContainer;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import lombok.Getter;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ import java.util.Map;
 @ApplicationScoped
 public class BFFService {
 
+    @Getter
     private BridgeToService bridgeToService;
     private BffConfig bffConfig;
 
@@ -91,16 +93,9 @@ public class BFFService {
                 e.printStackTrace();
             }
     }
-    
-    public BridgeToService getBridgeToService() {
-        return bridgeToService;
-    }
 
     public String getTableOrderId(String numeroTable){
         return ordersPerTable.get(numeroTable).getAssociatedTableOrderID();
     }
-
-
-
 
 }

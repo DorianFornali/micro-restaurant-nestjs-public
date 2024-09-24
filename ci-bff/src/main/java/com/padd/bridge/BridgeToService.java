@@ -64,35 +64,12 @@ public class BridgeToService {
 
     public String httpPost(RestaurantService restaurantService, String resourceTarget, String body){
         HttpURLConnection conn;
-        switch(restaurantService){
-            case DINING :
-                conn = initConnection(restaurantService, resourceTarget);
-                if(conn == null){
-                    System.err.println("Connection to + " + restaurantService + " failed");
-                }
-                else {
-                    return receiveAnswer(conn, body);
-                }
-            break;
-            case KITCHEN :
-                conn = initConnection(restaurantService, resourceTarget);
-                if(conn == null){
-                    System.err.println("Connection to + " + restaurantService + " failed");
-                }
-                else {
-                    return receiveAnswer(conn, body);
-                }
-            break;
-            case MENU :
-                conn = initConnection(restaurantService, resourceTarget);
-                if(conn == null){
-                    System.err.println("Connection to + " + restaurantService + " failed");
-                }
-                else {
-                    return receiveAnswer(conn, body);
-                }
-
-            break;
+        conn = initConnection(restaurantService, resourceTarget);
+        if(conn == null){
+            System.err.println("Connection to + " + restaurantService + " failed");
+        }
+        else {
+            return receiveAnswer(conn, body);
         }
 
         return "Failed to get resource at " + restaurantService + "/" + resourceTarget;

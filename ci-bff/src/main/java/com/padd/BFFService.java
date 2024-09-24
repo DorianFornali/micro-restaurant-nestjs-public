@@ -20,17 +20,17 @@ import java.util.Map;
 @ApplicationScoped
 public class BFFService {
 
-    BridgeToService bridgeToService;
-    BffConfig bffConfig;
+    private BridgeToService bridgeToService;
+    private BffConfig bffConfig;
 
     /** Array containing details on the table orders
      * ordersPerTable[0] contains the OrderContainer for table 0
      * */
-    Map<String, OrderContainer> ordersPerTable;
+    public Map<String, OrderContainer> ordersPerTable;
 
     @Inject
-    public BFFService(BridgeToService bridgeToService, BffConfig bffConfig) {
-        this.bridgeToService = bridgeToService;
+    public BFFService(BffConfig bffConfig) {
+        this.bridgeToService = new BridgeToService(bffConfig);
         this.bffConfig = bffConfig;
         ordersPerTable = new HashMap<>();
     }
@@ -52,11 +52,15 @@ public class BFFService {
 
                 /* Handle of the menuItems */
                 JsonNode menuItemsNode = rootNode.get("menuItems");
-                
+                System.out.println("Succesfully retrieved menuItems: " + menuItemsNode);
+
                 List<MenuItem> menuItems = new ArrayList<>();
                 List<MenuItem> drinksItems = new ArrayList<>(); // pass the drinks to the next step 
                 for (JsonNode itemNode : menuItemsNode) {
+                    System.out.println(tableNumber + " is ordering: " + itemNode.get("menuItem"));
                     MenuItem menuItem = jsonMessageMapper.treeToValue(itemNode.get("menuItem"), MenuItem.class);
+                    
+                    System.out.println("Test: Succesfully retrieved menuItem: " + menuItem);
                     menuItems.add(menuItem);
                     if (menuItem.getCategory().equals("Drinks")) {
                         drinksItems.add(menuItem);
@@ -86,11 +90,15 @@ public class BFFService {
             catch (Exception e){
                 e.printStackTrace();
             }
-
-
+    }
+    
+    public BridgeToService getBridgeToService() {
+        return bridgeToService;
     }
 
-
+    public String getTableOrderId(String numeroTable){
+        return ordersPerTable.get(numeroTable).getAssociatedTableOrderID();
+    }
 
 
 

@@ -18,7 +18,6 @@ public class BridgeToService {
 
     BffConfig bffConfig;
 
-    @Inject
     public BridgeToService(BffConfig bffConfig){
         System.out.println("Creating bridge to service");
         this.bffConfig = bffConfig;

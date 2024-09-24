@@ -1,10 +1,13 @@
 package com.padd.model;
 
+
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
 import java.util.ArrayList;
+
+
 
 public class OrderContainer {
 
@@ -19,6 +22,7 @@ public class OrderContainer {
 
     /** The list of supplements ordered for the table */
     @Getter
+    @Setter
     private List<MenuItem> supplementItems;
 
     public OrderContainer(String id, List<MenuItem> menuItems) {

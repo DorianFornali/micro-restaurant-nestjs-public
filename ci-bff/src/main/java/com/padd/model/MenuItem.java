@@ -7,6 +7,8 @@ import lombok.Setter;
 @Setter
 public class MenuItem {
 
+    public MenuItem () {} 
+
     public MenuItem(String _id, String fullName, String shortName, double price, String category, String image, boolean isSupplement) {
         this._id = _id;
         this.fullName = fullName;

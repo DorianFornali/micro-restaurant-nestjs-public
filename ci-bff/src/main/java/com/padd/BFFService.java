@@ -98,17 +98,8 @@ public class BFFService {
                     System.out.println("SENDING NOT VIA BRIDGE TO SERVICE -------------------");
 
                     tableOrderID = getTableOrderIDFromHTTPResponse(
-                            sendPostRequest("http://dining-service:3000/tableOrders", "{\"tableNumber\": " + tableNumber + ", \"customersCount\": 1}")
+                            bridgeToService.httpPost(RestaurantService.DINING, "tableOrders", "{\"tableNumber\": " + tableNumber + ", \"customersCount\": 1}")
                     );
-
-
-                    // DEBUG --------
-
-                    /*tableOrderID = getTableOrderIDFromHTTPResponse(
-                            bridgeToService.httpPost(RestaurantService.DINING,
-                                    "tableOrders",
-                                    "{\"tableNumber\": \"" + tableNumber + "\", \"customersCount\":" + bffConfig.getSeatsPerTable() + "}")
-                    );*/
                 }
 
                 for(MenuItem item : itemsToSendToKitchen){

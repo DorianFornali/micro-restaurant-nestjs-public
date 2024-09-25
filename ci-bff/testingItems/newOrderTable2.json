@@ -3,7 +3,7 @@
     "menuItems" : [
         {
             "menuItem" : {
-                "_id" : "66f3ff070ee35e44a820f5ca",
+                "_id" : "66f422fa70a509dfabaa63bc",
                 "fullName" : "Café",
                 "shortName": "café",
                 "price" : "1.8",
@@ -14,7 +14,7 @@
         },
         {
             "menuItem": {
-                "_id": "66f3ff070ee35e44a820f573",
+                "_id": "66f422fa70a509dfabaa6365",
                 "fullName": "Homemade foie gras terrine",
                 "shortName": "foie gras",
                 "price": 18,
@@ -25,7 +25,7 @@
         },
         {
             "menuItem": {
-                "_id":"66f3ff070ee35e44a820f58b",
+                "_id":"66f422fa70a509dfabaa637d",
                 "fullName":"Homemade beef burger",
                 "shortName":"beef burger",
                 "price":19,

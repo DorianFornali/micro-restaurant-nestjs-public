@@ -102,17 +102,20 @@ public class BFFService {
                     );
                 }
 
-                for(MenuItem item : itemsToSendToKitchen){
+                for (MenuItem item : itemsToSendToKitchen) {
                     System.out.println("Sending to kitchen ITEM: " + item.get_id());
-                    // We POSt request to tableOrders to add it to the table ORder
-                    String postBodyItem = "{\"menuItem\": " + item.get_id() +
-                            ", \"menuItemShortName\": " + item.getShortName() +
-                            ", \"howMany\": 1}";
+                    System.out.println(item.toPrettyString());
+
+                    // We POST request to tableOrders to add it to the table order
+                    String postBodyItem = "{\"menuItem\": \"" + item.get_id() + "\", " +
+                            "\"menuItemShortName\": \"" + item.getShortName() + "\", " +
+                            "\"howMany\": 1}";
+
+                    // TODO! This body does not seem to work
 
                     bridgeToService.httpPost(RestaurantService.DINING,
                             "tableOrders/" + tableOrderID,
                             postBodyItem);
-
                 }
 
 
@@ -123,13 +126,6 @@ public class BFFService {
                     /* if the table does not exists, create a new OrderContainer and add it to the Map (ordersPerTable) 
                      * When the OrderContainer passes by the constructor, it will correctly construct the lists ithin OrderContainer 
                     */
-
-                    // We post the tableOrder for prepare at /tableOrders/{id}/prepare
-                    System.out.println("Preparing table order for table: " + tableNumber);
-
-                    bridgeToService.httpPost(RestaurantService.DINING,
-                            "tableOrders/" + tableOrderID + "/prepare",
-                            "");
 
                     orderContainer = new OrderContainer(tableNumber, menuItems);
                     ordersPerTable.put(tableNumber, orderContainer);
@@ -142,13 +138,13 @@ public class BFFService {
                         orderContainer.addMenuItem(menuItem);
                     }
                     System.out.println("Updated order for table: " + tableNumber);
-
-                    System.out.println("Preparing table order for table: " + tableNumber);
-
-                    String response = bridgeToService.httpPost(RestaurantService.DINING,
-                            "tableOrders/" + tableOrderID + "/prepare",
-                            "");
                 }
+
+                System.out.println("Preparing table order for table: " + tableNumber);
+
+                String response = bridgeToService.httpPost(RestaurantService.DINING,
+                        "tableOrders/" + tableOrderID + "/prepare",
+                        "");
             }
 
             catch (Exception e){

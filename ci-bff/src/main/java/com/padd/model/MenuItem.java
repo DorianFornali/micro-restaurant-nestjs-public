@@ -27,4 +27,15 @@ public class MenuItem {
     private String image;
     private boolean isSupplement;
 
+    public String toPrettyString() {
+        return "MenuItem{" +
+                "_id='" + _id + '\'' +
+                ", fullName='" + fullName + '\'' +
+                ", shortName='" + shortName + '\'' +
+                ", price=" + price +
+                ", category='" + category + '\'' +
+                ", image='" + image + '\'' +
+                ", isSupplement=" + isSupplement +
+                '}';
+    }
 }

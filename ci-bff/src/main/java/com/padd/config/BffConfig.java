@@ -17,4 +17,12 @@ public class BffConfig {
     @ConfigProperty(name = "menu.url")
     String menuUrl;
 
+    @ConfigProperty(name = "amount.tables")
+    int amountTables;
+
+    @ConfigProperty(name = "seats.per.table")
+    int seatsPerTable;
+
+
+
 }

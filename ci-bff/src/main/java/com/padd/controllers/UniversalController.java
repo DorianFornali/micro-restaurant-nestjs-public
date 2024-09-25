@@ -2,20 +2,18 @@ package com.padd.controllers;
 
 import com.padd.BFFService;
 import com.padd.bridge.RestaurantService;
-import com.padd.model.MenuItem;
-import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-@Path("/menu")
-public class MenuController {
+@Path("/bff")
+public class UniversalController {
 
     BFFService bffService;
 
     @Inject
-    public MenuController(BFFService bffService) {
+    public UniversalController(BFFService bffService) {
         this.bffService = bffService;
     }
 

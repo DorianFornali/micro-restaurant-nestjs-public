@@ -32,7 +32,7 @@ public class BFFService {
 
     @Getter
     private BridgeToService bridgeToService;
-    private LunchStateController lunchStateController;
+    private LunchStateService lunchStateService;
     private BffConfig bffConfig;
 
     /** Array containing details on the table orders
@@ -41,20 +41,14 @@ public class BFFService {
     public Map<String, OrderContainer> ordersPerTable;
 
     @Inject
-    public BFFService(BffConfig bffConfig) {
+    public BFFService(BffConfig bffConfig, LunchStateService lunchStateService) {
         this.bridgeToService = new BridgeToService(bffConfig);
-        this.lunchStateController = new LunchStateController(this);
         this.bffConfig = bffConfig;
+        this.lunchStateService = lunchStateService;
         ordersPerTable = new HashMap<>();
     }
 
     public void handleIncomingOrder(String postBody) {
-        //TODO! The postbody contains the order details as well the table number
-        //TODO! If the map does not contain the table number, create a new OrderContainer and add it to the map
-        //TODO! If the map contains the table number, add the menuItems to the OrderContainer list of items and/or
-        //TODO! the supplementItems
-        //TODO! Additionnally, if there are any drinks in the order, use the bridgeToService to send a post tableOrders
-        
             try {
                 
                 ObjectMapper jsonMessageMapper = new ObjectMapper();
@@ -69,7 +63,7 @@ public class BFFService {
 
                 List<MenuItem> menuItems = new ArrayList<>();
                 List<MenuItem> itemsToSendToKitchen = new ArrayList<>(); // pass the drinks to the next step
-                List<String> typesToSendToKitchen = lunchStateController.getTypesToSendToKitchen();
+                List<String> typesToSendToKitchen = lunchStateService.getTypesToSendToKitchen();
 
                 for (JsonNode itemNode : menuItemsNode) {
                     System.out.println(tableNumber + " is ordering: " + itemNode.get("menuItem"));

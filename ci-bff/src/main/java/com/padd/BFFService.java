@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.padd.bridge.BridgeToService;
 import com.padd.bridge.RestaurantService;
 import com.padd.config.BffConfig;
+import com.padd.lunchState.LunchAdvancementState;
 import com.padd.lunchState.LunchStateController;
 import com.padd.lunchState.MealType;
 import com.padd.model.MenuItem;
@@ -89,6 +90,13 @@ public class BFFService {
 
                 if(orderContainer != null){
                     tableOrderID = orderContainer.getAssociatedTableOrderID();
+
+                    System.out.println("Table order already exists, updating entry for table: " + tableNumber);
+                    for (MenuItem menuItem : menuItems) {
+                        System.out.println("Adding item to order container of table: " + tableNumber + " item: " + menuItem.toPrettyString());
+                        orderContainer.addMenuItem(menuItem);
+                    }
+                    System.out.println("Updated entry for table: " + tableNumber);
                 }
                 else {
                     System.out.println("First order for that table, creating tableOrder by sending body: {\"tableNumber\": " + tableNumber + ", \"customersCount\": 1}");
@@ -97,51 +105,20 @@ public class BFFService {
                     tableOrderID = getTableOrderIDFromHTTPResponse(
                             bridgeToService.httpPost(RestaurantService.DINING, "tableOrders", "{\"tableNumber\": " + tableNumber + ", \"customersCount\": 1}")
                     );
-                }
-
-                for (MenuItem item : itemsToSendToKitchen) {
-                    System.out.println("Sending to kitchen ITEM: " + item.get_id());
-                    System.out.println(item.toPrettyString());
-
-                    // We POST request to tableOrders to add it to the table order
-                    String postBodyItem = "{\"menuItemId\": \"" + item.get_id() + "\", " +
-                            "\"menuItemShortName\": \"" + item.getShortName() + "\", " +
-                            "\"howMany\":" + 1 + "}";
-
-                    // TODO! This body does not seem to work
-
-                    bridgeToService.httpPost(RestaurantService.DINING,
-                            "tableOrders/" + tableOrderID,
-                            postBodyItem);
-                }
-
-
-
-
-
-                if (orderContainer == null) {
-                    /* if the table does not exists, create a new OrderContainer and add it to the Map (ordersPerTable) 
-                     * When the OrderContainer passes by the constructor, it will correctly construct the lists ithin OrderContainer 
-                    */
 
                     orderContainer = new OrderContainer(tableNumber, menuItems);
                     ordersPerTable.put(tableNumber, orderContainer);
                     System.out.println("Created new entry for table: " + tableNumber);
+                    // We must also set the tableOrderID in the orderContainer
+                    orderContainer.setAssociatedTableOrderID(tableOrderID);
+                    System.out.println("Set order container id to: " + tableOrderID);
                 }
 
-                else {
-                    /* if the table exists, add the menuItems to the OrderContainer list of items and/or the supplementItems */
-                    for (MenuItem menuItem : menuItems) {
-                        orderContainer.addMenuItem(menuItem);
-                    }
-                    System.out.println("Updated entry for table: " + tableNumber);
+                for (MenuItem item : itemsToSendToKitchen) {
+                    sendMenuItemToTableOrder(tableOrderID, item);
                 }
 
-                System.out.println("Preparing table order for table: " + tableNumber);
-
-                String response = bridgeToService.httpPost(RestaurantService.DINING,
-                        "tableOrders/" + tableOrderID + "/prepare",
-                        "");
+                sendTableOrderToKitchen(tableOrderID);
             }
 
             catch (Exception e){
@@ -159,35 +136,39 @@ public class BFFService {
 
         for (Map.Entry<String, OrderContainer> entry : ordersPerTable.entrySet()) {
             OrderContainer orderContainer = entry.getValue();
-            List<MenuItem> itemsToSendToKitchen = new ArrayList<>();
 
             for (MenuItem item : orderContainer.getMenuItems()) {
-                if (item.getCategory().equals(typeToSendToKitchen)) {
-                    itemsToSendToKitchen.add(item);
-                    // For each Item to send to the kitchen, we make a post request to /tableOrders/{tableOrderId}
-                    // with the item as body in this shape: {"menuItem": item, "menuItemShortName: item.getShortName(), "howMany": 1}
-
-                    // We create the body of the post request
-                    String postBody = "{\"menuItem\": " + item.get_id() +
-                            ", \"menuItemShortName\": " + item.getShortName() +
-                            ", \"howMany\": 1}";
-
-                    System.out.println("Sending item" + item.get_id() + " to kitchen at URL " + RestaurantService.DINING + "tableOrders/" + orderContainer.getAssociatedTableOrderID());
-
-                    bridgeToService.httpPost(RestaurantService.DINING,
-                            "tableOrders/" + orderContainer.getAssociatedTableOrderID(),
-                            postBody);
+                int index = LunchAdvancementState.valueOf(typeToSendToKitchen).ordinal();
+                if (item.getCategory().equals(MealType.values()[index].toString())) {
+                    // We send the item to the tableOrder
+                    sendMenuItemToTableOrder(orderContainer.getAssociatedTableOrderID(), item);
                 }
             }
 
             // We can now PREPARE the tableOrder with a post request, no body just the URL
-            bridgeToService.httpPost(RestaurantService.DINING,
-                    "tableOrders/" + orderContainer.getAssociatedTableOrderID() + "/prepare",
-                    "");
-
-
+            System.out.println("About to send table order to kitchen for tableOrderID: " + orderContainer.getAssociatedTableOrderID());
+            sendTableOrderToKitchen(orderContainer.getAssociatedTableOrderID());
 
         }
+    }
+
+    private void sendMenuItemToTableOrder(String tableOrderID, MenuItem item){
+        String postBodyItem = "{\"menuItemId\": \"" + item.get_id() + "\", " +
+                "\"menuItemShortName\": \"" + item.getShortName() + "\", " +
+                "\"howMany\":" + 1 + "}";
+
+        System.out.println("Inserting item" + item.toPrettyString() + " into tableOrder of id " + tableOrderID + " at URL " + "tableOrders/" + tableOrderID);
+
+        bridgeToService.httpPost(RestaurantService.DINING,
+                "tableOrders/" + tableOrderID,
+                postBodyItem);
+    }
+
+    private void sendTableOrderToKitchen(String tableOrderID){
+        System.out.println("Preparing table order for tableOrderID: " + tableOrderID);
+        bridgeToService.httpPost(RestaurantService.DINING,
+                "tableOrders/" + tableOrderID + "/prepare",
+                "");
     }
 
     public String getTableOrderId(String numeroTable){

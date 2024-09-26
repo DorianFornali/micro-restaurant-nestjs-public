@@ -7,6 +7,7 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,20 +31,29 @@ public class LunchStateController {
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
     @Path("/advance")
-    public void advanceLunchState(String desiredLunchState) {
+    public Response advanceLunchState(String desiredLunchState) {
         int n = LunchAdvancementState.values().length;
-        //TODO! Implement the logic to advance the currentLunchState to the next state
-        //TODO! call BFFService to send all the dishes of that state to the kitchen
 
-        // First we increment the index of the current state by int of body
+        System.out.println("Received order to advance to state: " + LunchAdvancementState.values()[Integer.parseInt(desiredLunchState)]);
+
         int targetStateIndex = Integer.parseInt(desiredLunchState);
 
         if(targetStateIndex < n){
             this.setCurrentLunchState(LunchAdvancementState.values()[targetStateIndex]);
-        }
+            System.out.println("Set current state: " + this.currentLunchState);
+            bffService.sendDishesToKitchen(this.currentLunchState.toString());
 
-        // Now ask for BFFService to send the corresponding dishes to the kitchen
-        bffService.sendDishesToKitchen(this.currentLunchState.toString());
+            // Return a successful response
+            return Response.ok("Successfully advanced to state: " + this.currentLunchState).build();
+        }
+        else {
+            System.out.println("Invalid state index");
+
+            // Return an error response
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Invalid state index: " + targetStateIndex)
+                    .build();
+        }
     }
 
     public List<String> getTypesToSendToKitchen(){

@@ -100,7 +100,20 @@ public class BridgeToService {
                 os.write(input, 0, input.length);
             }
 
-            InputStream is = conn.getInputStream();
+            int statusCode = conn.getResponseCode();
+            InputStream is;
+            if (statusCode >= 200 && statusCode < 300) {
+                is = conn.getInputStream();
+            } else {
+                System.out.println("Seems like an error occurred: "
+                        + conn.getResponseMessage() +
+                        " when sending POST request to "
+                        + urlString +
+                        " with body: "
+                        + jsonInputString);
+                is = conn.getErrorStream();
+            }
+
             byte[] buffer = new byte[1024];
             int bytesRead;
             StringBuilder response = new StringBuilder();
@@ -113,4 +126,6 @@ public class BridgeToService {
             return null;
         }
     }
+
+
 }

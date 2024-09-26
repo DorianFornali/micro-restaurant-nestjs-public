@@ -94,9 +94,6 @@ public class BFFService {
                     System.out.println("First order for that table, creating tableOrder by sending body: {\"tableNumber\": " + tableNumber + ", \"customersCount\": 1}");
 
                     // DEBUG---------
-
-                    System.out.println("SENDING NOT VIA BRIDGE TO SERVICE -------------------");
-
                     tableOrderID = getTableOrderIDFromHTTPResponse(
                             bridgeToService.httpPost(RestaurantService.DINING, "tableOrders", "{\"tableNumber\": " + tableNumber + ", \"customersCount\": 1}")
                     );
@@ -107,9 +104,9 @@ public class BFFService {
                     System.out.println(item.toPrettyString());
 
                     // We POST request to tableOrders to add it to the table order
-                    String postBodyItem = "{\"menuItem\": \"" + item.get_id() + "\", " +
+                    String postBodyItem = "{\"menuItemId\": \"" + item.get_id() + "\", " +
                             "\"menuItemShortName\": \"" + item.getShortName() + "\", " +
-                            "\"howMany\": 1}";
+                            "\"howMany\":" + 1 + "}";
 
                     // TODO! This body does not seem to work
 
@@ -129,7 +126,7 @@ public class BFFService {
 
                     orderContainer = new OrderContainer(tableNumber, menuItems);
                     ordersPerTable.put(tableNumber, orderContainer);
-                    System.out.println("Created new order for table: " + tableNumber);
+                    System.out.println("Created new entry for table: " + tableNumber);
                 }
 
                 else {
@@ -137,7 +134,7 @@ public class BFFService {
                     for (MenuItem menuItem : menuItems) {
                         orderContainer.addMenuItem(menuItem);
                     }
-                    System.out.println("Updated order for table: " + tableNumber);
+                    System.out.println("Updated entry for table: " + tableNumber);
                 }
 
                 System.out.println("Preparing table order for table: " + tableNumber);
@@ -206,34 +203,6 @@ public class BFFService {
             return rootNode.get("_id").asText();
         }
         catch (Exception e){
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    private String sendPostRequest(String urlString, String jsonInputString) {
-        try {
-            URL url = new URL(urlString);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("accept", "application/json");
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setDoOutput(true);
-
-            try (OutputStream os = conn.getOutputStream()) {
-                byte[] input = jsonInputString.getBytes("utf-8");
-                os.write(input, 0, input.length);
-            }
-
-            InputStream is = conn.getInputStream();
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            StringBuilder response = new StringBuilder();
-            while ((bytesRead = is.read(buffer)) != -1) {
-                response.append(new String(buffer, 0, bytesRead));
-            }
-            return response.toString();
-        } catch (IOException e) {
             e.printStackTrace();
             return null;
         }

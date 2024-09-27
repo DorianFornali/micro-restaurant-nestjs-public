@@ -114,6 +114,18 @@ public class BFFService {
                 }
 
                 sendTableOrderToKitchen(tableOrderID);
+                try {
+                    new Thread(() -> {
+                        try {
+                            System.out.println("Starting cooking process for eligible dishes ...");
+                            startCooking(Integer.parseInt(tableNumber));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }).start();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
 
             catch (Exception e){
@@ -189,26 +201,6 @@ public class BFFService {
     }
 
     public void startCooking(int tableNumber){
-        // We first retrieve the preparationItems for this table
-        // curl -X 'GET' \
-        //  'http://localhost:3002/preparedItems?post=HOT_DISH' \
-        //  -H 'accept: application/json'
-
-        // AND
-        // curl -X 'GET' \
-        //  'http://localhost:3002/preparedItems?post=COLD_DISH' \
-        //  -H 'accept: application/json'
-
-        // AND
-        // curl -X 'GET' \
-        //  'http://localhost:3002/preparedItems?post=BAR' \
-        //  -H 'accept: application/json'
-
-        // For each preparedItem that has the field finishedAt set to null we create
-        // a new temporary thread that will call the /start endpoint, wait for a random time and then
-        // call the /finish endpoint. ONCE all threads have terminated; meaning all dishes have been cooked
-        // We call the /takenToTable endpoint on every preparations
-
         List<PreparedItem> preparedItems = new ArrayList<>();
 
         System.out.println("Trying to /start cooking for table: " + tableNumber);

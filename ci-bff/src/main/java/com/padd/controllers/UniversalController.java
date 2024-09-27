@@ -80,7 +80,7 @@ public class UniversalController {
     @Produces(MediaType.TEXT_PLAIN)
     public Response postNewOrder(String orderDetails) {
         bffService.handleIncomingOrder(orderDetails);
-        return Response.ok("Order received").build();
+        return Response.ok("Order received and treated").build();
     }
 
     // ------------ Payment flow related endpoints ------------

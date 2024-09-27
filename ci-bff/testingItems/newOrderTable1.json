@@ -3,7 +3,7 @@
     "menuItems" : [
         {
             "menuItem": {
-                "_id": "66f548157eacbf0905910de9",
+                "_id": "66f67742177db6468d750e25",
                 "fullName": "Crab maki with fresh mango",
                 "shortName": "crab maki",
                 "price": 16,
@@ -14,7 +14,7 @@
         },
         {
             "menuItem": {
-                "_id": "66f548157eacbf0905910dec",
+                "_id": "66f67742177db6468d750e28",
                 "fullName": "Burrata Mozzarella",
                 "shortName": "burrata",
                 "price": 16,
@@ -25,7 +25,7 @@
         },
         {
             "menuItem": {
-                "_id": "66f548157eacbf0905910def",
+                "_id": "66f67742177db6468d750e2b",
                 "fullName": "Delicious Pizza Regina",
                 "shortName": "pizza",
                 "price": 12,

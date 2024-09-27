@@ -12,6 +12,7 @@ import com.padd.lunchState.LunchStateController;
 import com.padd.lunchState.MealType;
 import com.padd.model.MenuItem;
 import com.padd.model.OrderContainer;
+import com.padd.model.PreparedItem;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lombok.Getter;
@@ -143,6 +144,10 @@ public class BFFService {
             System.out.println("About to send table order to kitchen for tableOrderID: " + orderContainer.getAssociatedTableOrderID());
             sendTableOrderToKitchen(orderContainer.getAssociatedTableOrderID());
 
+            // And we start the cooking process
+            System.out.println("STARTING COOKING PROCESS FOR TABLE: " + entry.getKey() + " ...");
+            startCooking(Integer.parseInt(entry.getKey()));
+
         }
     }
 
@@ -181,5 +186,137 @@ public class BFFService {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public void startCooking(int tableNumber){
+        // We first retrieve the preparationItems for this table
+        // curl -X 'GET' \
+        //  'http://localhost:3002/preparedItems?post=HOT_DISH' \
+        //  -H 'accept: application/json'
+
+        // AND
+        // curl -X 'GET' \
+        //  'http://localhost:3002/preparedItems?post=COLD_DISH' \
+        //  -H 'accept: application/json'
+
+        // AND
+        // curl -X 'GET' \
+        //  'http://localhost:3002/preparedItems?post=BAR' \
+        //  -H 'accept: application/json'
+
+        // For each preparedItem that has the field finishedAt set to null we create
+        // a new temporary thread that will call the /start endpoint, wait for a random time and then
+        // call the /finish endpoint. ONCE all threads have terminated; meaning all dishes have been cooked
+        // We call the /takenToTable endpoint on every preparations
+
+        List<PreparedItem> preparedItems = new ArrayList<>();
+
+        System.out.println("Trying to /start cooking for table: " + tableNumber);
+
+
+        try {
+            System.out.println("Calling the kitchen to get prepared items for HOT DISHES ...");
+            String hotDishResponse = bridgeToService.httpGet(RestaurantService.KITCHEN, "preparedItems?post=HOT_DISH");
+            System.out.println("Calling the kitchen to get prepared items for COLD DISHES ...");
+            String coldDishResponse = bridgeToService.httpGet(RestaurantService.KITCHEN, "preparedItems?post=COLD_DISH");
+            System.out.println("Calling the kitchen to get prepared items for BAR ...");
+            String barResponse = bridgeToService.httpGet(RestaurantService.KITCHEN, "preparedItems?post=BAR");
+
+            ObjectMapper jsonMessageMapper = new ObjectMapper();
+            JsonNode hotDishRootNode = jsonMessageMapper.readTree(hotDishResponse);
+            JsonNode coldDishRootNode = jsonMessageMapper.readTree(coldDishResponse);
+            JsonNode barRootNode = jsonMessageMapper.readTree(barResponse);
+
+            for (JsonNode itemNode : hotDishRootNode) {
+                PreparedItem preparedItem = jsonMessageMapper.treeToValue(itemNode, PreparedItem.class);
+                preparedItems.add(preparedItem);
+            }
+
+            for (JsonNode itemNode : coldDishRootNode) {
+                PreparedItem preparedItem = jsonMessageMapper.treeToValue(itemNode, PreparedItem.class);
+                preparedItems.add(preparedItem);
+            }
+
+            for (JsonNode itemNode : barRootNode) {
+                PreparedItem preparedItem = jsonMessageMapper.treeToValue(itemNode, PreparedItem.class);
+                preparedItems.add(preparedItem);
+            }
+
+            for(PreparedItem item : preparedItems){
+                System.out.println("Found following Prepared item: " + item.getShortName());
+            }
+
+            System.out.println("Now starting the cooking process...");
+
+            // We create a thread for each preparedItem
+            List<Thread> threads = new ArrayList<>();
+            for (PreparedItem item : preparedItems) {
+                if (item.getFinishedAt() == null) {
+                    System.out.println("Item " + item.getShortName() + " has finishedAt field to null ...");
+                    Thread thread = new Thread(() -> {
+                        try {
+                            // We start the preparation
+                            System.out.println("Starting preparation for item: " + item.getShortName());
+                            bridgeToService.httpPost(RestaurantService.KITCHEN, "preparedItems/" + item.get_id() + "/start", "");
+
+                            // We wait for a random time, between 5 and 10 seconds
+                            int randomTime = (int) (Math.random() * 5) + 5;
+                            Thread.sleep(randomTime * 1000L);
+
+                            // We finish the preparation
+                            System.out.println("Finishing preparation for item: " + item.getShortName());
+                            bridgeToService.httpPost(RestaurantService.KITCHEN, "preparedItems/" + item.get_id() + "/finish", "");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    });
+
+                    threads.add(thread);
+                    thread.start();
+                }
+            }
+
+            // We wait for all threads to finish
+            for (Thread thread : threads) {
+                System.out.println("Waiting for thread" + thread.hashCode() + " to finish...");
+                thread.join();
+            }
+
+            System.out.println("All threads have finished, all dishes have been cooked! :");
+
+            new Thread(() -> {
+                try {
+                    System.out.println("Thread sleeping 20s before taking dishes to table ...");
+                    Thread.sleep(20000);
+                    System.out.println("Now trying to take the dishes of that table to the table ...");
+
+                    // We call the /takenToTable endpoint on every preparation
+                    // We first get the preparations for the table at /preparations?state=readyToBeServed
+
+                    String readyToBeServedResponse = bridgeToService.httpGet(RestaurantService.KITCHEN, "preparations?state=readyToBeServed");
+                    // We fetch the _id field for every preparation in the response
+
+                    JsonNode readyToBeServedRootNode = jsonMessageMapper.readTree(readyToBeServedResponse);
+                    List<String> preparationIds = new ArrayList<>();
+                    for (JsonNode itemNode : readyToBeServedRootNode) {
+                        preparationIds.add(itemNode.get("_id").asText());
+                    }
+
+                    // We call the /takenToTable endpoint on every preparation
+                    for (String preparationId : preparationIds) {
+                        System.out.println("Taking preparation with id: " + preparationId + " to the table ...");
+                        bridgeToService.httpPost(RestaurantService.KITCHEN, "preparations/" + preparationId + "/takenToTable", "");
+                    }
+
+                } catch (InterruptedException | IOException e) {
+                    e.printStackTrace();
+                }
+
+            }).start();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 }

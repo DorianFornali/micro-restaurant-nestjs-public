@@ -1,0 +1,30 @@
+{
+    "tableNumber": "3",
+    "menuItems": [
+        {
+            "menuItem": {
+                
+                "_id": "66f819c77698f204ab0d8353",
+                "fullName": "Homemade foie gras terrine",
+                "shortName": "foie gras",
+                "price": 18,
+                "category": "STARTER",
+                "image": "https://cdn.pixabay.com/photo/2016/11/12/15/28/restaurant-1819024_960_720.jpg",
+                "supplement": false
+            }
+
+        },
+        {
+            "menuItem": {
+                "_id": "66f819c77698f204ab0d8356",
+                "fullName": "Soft-boiled egg breaded with breadcrumbs and nuts",
+                "shortName": "soft-boiled egg",
+                "price": 16,
+                "category": "STARTER",
+                "image": "https://cdn.pixabay.com/photo/2019/06/03/22/06/eggs-4250077_960_720.jpg",
+                "supplement": false
+            }
+
+        }
+    ]
+}

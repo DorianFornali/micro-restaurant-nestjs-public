@@ -12,6 +12,11 @@ import com.padd.lunchState.MealType;
 import com.padd.model.MenuItem;
 import com.padd.model.OrderContainer;
 import com.padd.model.PreparedItem;
+import com.padd.model.StateBoard;
+import com.padd.model.StateBoardPerTable;
+
+import io.quarkus.dev.testing.ContinuousTestingSharedStateManager.State;
+import io.quarkus.vertx.http.runtime.devmode.Json;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lombok.Getter;
@@ -21,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 
 @ApplicationScoped
 public class BFFService {
@@ -305,4 +311,39 @@ public class BFFService {
         }
 
     }
+
+
+    public StateBoard getStateBoard() {
+        StateBoard stateBoard = new StateBoard();
+    
+        String startedTables = bridgeToService.httpGet(RestaurantService.KITCHEN, "preparations?state=preparationStarted");
+        String preparedTables = bridgeToService.httpGet(RestaurantService.KITCHEN, "preparations?state=readyToBeServed");
+    
+        try { 
+            ObjectMapper jsonMessageMapper = new ObjectMapper();
+            List<StateBoardPerTable> startedTablesList = processTables(jsonMessageMapper, startedTables);
+            List<StateBoardPerTable> readyToBeServedList = processTables(jsonMessageMapper, preparedTables);
+    
+            stateBoard.setPreparationStarted(startedTablesList);
+            stateBoard.setReadyToBeServed(readyToBeServedList);
+            return stateBoard;
+        } 
+        
+        catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    private List<StateBoardPerTable> processTables(ObjectMapper jsonMessageMapper, String tables) throws IOException {
+        List<StateBoardPerTable> preparations = new ArrayList<>();
+        JsonNode rootNode = jsonMessageMapper.readTree(tables);
+    
+        for (JsonNode itemNode : rootNode) {
+            preparations.add(new StateBoardPerTable(itemNode.get("_id").asText(), itemNode.get("tableNumber").asText()));
+        }
+    
+        return preparations;
+    }
 }
+

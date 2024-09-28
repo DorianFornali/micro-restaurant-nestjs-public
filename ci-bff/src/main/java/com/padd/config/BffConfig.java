@@ -1,7 +1,6 @@
 package com.padd.config;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.ws.rs.GET;
 import lombok.Getter;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 

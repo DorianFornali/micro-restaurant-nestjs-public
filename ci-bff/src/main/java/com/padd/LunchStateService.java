@@ -23,26 +23,26 @@ public class LunchStateService {
 
     public Response advanceLunchState(String desiredLunchState, BFFService bffService) {
         int n = LunchAdvancementState.values().length;
-
-        System.out.println("Received order to advance to state: " + LunchAdvancementState.values()[Integer.parseInt(desiredLunchState)]);
-
         int targetStateIndex = Integer.parseInt(desiredLunchState);
 
-        if(targetStateIndex < n){
-            this.setCurrentLunchState(LunchAdvancementState.values()[targetStateIndex]);
-            System.out.println("Set current state: " + this.currentLunchState);
-            bffService.sendDishesToKitchen(this.currentLunchState.toString());
-            // Return a successful response
-            return Response.ok("Successfully advanced to state: " + this.currentLunchState).build();
-        }
-        else {
+        // Check if the index is invalid at the beginning
+        if(targetStateIndex >= n){
             System.out.println("Invalid state index");
 
             // Return an error response
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Invalid state index: " + targetStateIndex)
+                    .entity("Invalid state index: " + targetStateIndex + ". The maximum index is: " + (n - 1) + " corresponding to the DESSERTS phase.")
                     .build();
         }
+
+        System.out.println("Received order to advance to state: " + LunchAdvancementState.values()[targetStateIndex]);
+
+        this.setCurrentLunchState(LunchAdvancementState.values()[targetStateIndex]);
+        System.out.println("Set current state: " + this.currentLunchState);
+        bffService.sendDishesToKitchen(this.currentLunchState.toString());
+
+        // Return a successful response
+        return Response.ok("Successfully advanced to state: " + this.currentLunchState).build();
     }
 
     public List<String> getTypesToSendToKitchen(){

@@ -22,6 +22,7 @@ public class LunchStateService {
     }
 
     public Response advanceLunchState(String desiredLunchState, BFFService bffService) {
+        System.out.println("BFFService HashCode in advanceLunchState: " + bffService.hashCode());
         int n = LunchAdvancementState.values().length;
         int targetStateIndex = Integer.parseInt(desiredLunchState);
 

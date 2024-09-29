@@ -18,6 +18,7 @@ public class OrderContainer {
 
     /** The list of products ordered for the table */
     @Getter
+    @Setter
     private List<MenuItem> menuItems;
 
     /** The list of supplements ordered for the table */
@@ -44,7 +45,7 @@ public class OrderContainer {
      * @param item The menu item to add
      */
     public void addMenuItem(MenuItem item) {
-        if (item.isSupplement()){
+        if (item.isSupplement() == true){
             supplementItems.add(item);
         }
         menuItems.add(item);

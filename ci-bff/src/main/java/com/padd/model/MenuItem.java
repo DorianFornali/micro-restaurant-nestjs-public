@@ -9,14 +9,14 @@ public class MenuItem {
 
     public MenuItem () {} 
 
-    public MenuItem(String _id, String fullName, String shortName, double price, String category, String image, boolean isSupplement) {
+    public MenuItem(String _id, String fullName, String shortName, double price, String category, String image, boolean supplement) {
         this._id = _id;
         this.fullName = fullName;
         this.shortName = shortName;
         this.price = price;
         this.category = category;
         this.image = image;
-        this.isSupplement = isSupplement;
+        this.supplement = supplement;
     }
 
     private String _id;
@@ -25,7 +25,7 @@ public class MenuItem {
     private double price;
     private String category;
     private String image;
-    private boolean isSupplement;
+    private boolean supplement;
 
     public String toPrettyString() {
         return "MenuItem{" +
@@ -35,7 +35,7 @@ public class MenuItem {
                 ", price=" + price +
                 ", category='" + category + '\'' +
                 ", image='" + image + '\'' +
-                ", isSupplement=" + isSupplement +
+                ", isSupplement=" + supplement +
                 '}';
     }
 }

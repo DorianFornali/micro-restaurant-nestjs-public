@@ -1,26 +1,30 @@
 package com.padd.controllers;
 
+import com.padd.model.OrderContainer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.padd.BFFService;
 import com.padd.bridge.RestaurantService;
 import com.padd.model.MenuItem;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.util.List;
+import java.util.Map;
 
+@ApplicationScoped
 @Path("/bff")
 public class UniversalController {
-
-    BFFService bffService;
+    private final BFFService bffService;
 
     @Inject
     public UniversalController(BFFService bffService) {
         this.bffService = bffService;
+        System.out.println("BFFService HashCode in UniversalController Constructor: " + bffService.hashCode());
     }
 
     // -----------------------------------------------------------------------------------
@@ -50,24 +54,8 @@ public class UniversalController {
     @Path("/menus/{id}")
     @Produces(MediaType.TEXT_PLAIN)
     public Response getMenuItem(@PathParam("id") String id) {
+        System.out.println("Request received on BFF to GET menu item with id " + id);
         return Response.ok(bffService.getBridgeToService().httpGet(RestaurantService.MENU, "menus/" + id)).build();
-    }
-
-    // -----------------------------------------------------------------------------------
-    // Endpoints aiming at targeting the kitchen service --------------------------------
-    // -----------------------------------------------------------------------------------
-
-    @GET
-    @Path("/preparations")
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response getPreparations() {
-        //TODO! Implement this
-        /*
-        We just GET HTTP the kitchen to get the state of the preparations for each table
-        and we return a list for each table with the time remaining
-        */
-        
-        return Response.ok(bffService.getStateBoard().toString()).build();
     }
 
     // -----------------------------------------------------------------------------------
@@ -87,29 +75,47 @@ public class UniversalController {
 
     @GET
     @Path("/supplements/{numTable}")
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)  // Use JSON since you're returning a JSON array
     public Response getTableOrder(@PathParam("numTable") String numTable) {
-        /*
-        Ici on cherche a obtenir tous les supplements pour une table donnee
-        On retourne simplement la liste des supplements stockées pour la table
-        Aucun appel au backend
-         */
-        // Retrieve supplements for the given table number
+        System.out.println("Checking the supplements for table " + numTable);
+        System.out.println("Retrieving supplements. BFFService HashCode: " + this.bffService.hashCode());
 
-        List<MenuItem> supplementsForTable = bffService.ordersPerTable.get(numTable).getSupplementItems();
+        // Retrieve the OrderContainer for the table
+        OrderContainer orderContainer = bffService.ordersPerTable.get(numTable);
 
-        // Convert the list to a JSON string
+        // Check if order exists for the table
+        if (orderContainer == null) {
+            System.out.println("No order found for table " + numTable);
+            return Response.status(Response.Status.NOT_FOUND)
+                           .entity("No order found for table " + numTable)
+                           .build();
+        }
+
+        // Get the supplement items
+        List<MenuItem> supplementsForTable = orderContainer.getSupplementItems();
+
+        // If no supplements are available, return an empty list
+        if (supplementsForTable == null || supplementsForTable.isEmpty()) {
+            System.out.println("No supplements found for table " + numTable);
+            return Response.ok("[]").build();  // Return empty JSON array
+        }
+
+        // Convert the list of supplements to JSON
         ObjectMapper objectMapper = new ObjectMapper();
         String json = "";
         try {
             json = objectMapper.writeValueAsString(supplementsForTable);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error converting supplements to JSON").build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                           .entity("Error converting supplements to JSON")
+                           .build();
         }
 
+        // Return the list of supplements as a JSON response
+        System.out.println("Supplements for table " + numTable + ": " + supplementsForTable);
         return Response.ok(json).build();
-    }
+}
 
     @POST
     @Path("/supplements/{numTable}/pay")
@@ -124,6 +130,8 @@ public class UniversalController {
          */
         // Process the paymentDetails here
         try {
+            Map<String, OrderContainer> ordersPerTable = bffService.ordersPerTable;
+            System.out.println(ordersPerTable);
             List<MenuItem> supplementItems = bffService.ordersPerTable.get(numTable).getSupplementItems();
             ObjectMapper jsonMessageMapper = new ObjectMapper();
             JsonNode rootNode = jsonMessageMapper.readTree(paymentDetails);
@@ -134,19 +142,29 @@ public class UniversalController {
             }
             bffService.ordersPerTable.get(numTable).setSupplementItems(supplementItems);
             if (supplementItems.isEmpty()) {
-                // TODO - call the bill endpoint
                 bffService.getBridgeToService().httpPost(RestaurantService.DINING, "/tableOrders/" + bffService.getTableOrderId(numTable) + "/bill", "");
 
             }
         }
-
         catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST).entity("Error processing payment").build();
         }
-
-
         return Response.ok("Payment processed for table " + numTable).build();
     }
 
 
+    // -----------------------------------------------------------------------------------
+    // Endpoints aiming at targeting the kitchen service --------------------------------
+    // -----------------------------------------------------------------------------------
+
+    @GET
+    @Path("/preparations")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response getPreparations() {
+        /*
+        We just GET HTTP the kitchen to get the state of the preparations for each table
+        and we return a list for each table with the time remaining
+        */
+        return Response.ok(bffService.getStateBoard().toString()).build();
+    }
 }

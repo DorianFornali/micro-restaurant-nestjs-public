@@ -18,8 +18,10 @@ import com.padd.model.StateBoardPerTable;
 import io.quarkus.dev.testing.ContinuousTestingSharedStateManager.State;
 import io.quarkus.vertx.http.runtime.devmode.Json;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Singleton;
 import jakarta.inject.Inject;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 
-@ApplicationScoped
+@Singleton
 public class BFFService {
 
     @Getter
@@ -39,6 +41,8 @@ public class BFFService {
     /** Array containing details on the table orders
      * ordersPerTable[0] contains the OrderContainer for table 0
      * */
+    @Getter
+    @Setter
     public Map<String, OrderContainer> ordersPerTable;
 
     @Inject
@@ -46,7 +50,8 @@ public class BFFService {
         this.bridgeToService = new BridgeToService(bffConfig);
         this.bffConfig = bffConfig;
         this.lunchStateService = lunchStateService;
-        ordersPerTable = new HashMap<>();
+        this.ordersPerTable = new HashMap<>();
+        System.out.println("BFFService instance created. HashCode: " + this.hashCode());
     }
 
     public void handleIncomingOrder(String postBody) {
@@ -101,12 +106,10 @@ public class BFFService {
                             bridgeToService.httpPost(RestaurantService.DINING, "tableOrders", "{\"tableNumber\": " + tableNumber + ", \"customersCount\": 1}")
                     );
 
-                    orderContainer = new OrderContainer(tableNumber, menuItems);
+                    orderContainer = new OrderContainer(tableOrderID, menuItems);
                     ordersPerTable.put(tableNumber, orderContainer);
+                    System.out.println("Orders per table updated: " + ordersPerTable.get(tableNumber).getSupplementItems());
                     System.out.println("Created new entry for table: " + tableNumber);
-                    // We must also set the tableOrderID in the orderContainer
-                    orderContainer.setAssociatedTableOrderID(tableOrderID);
-                    System.out.println("Set order container id to: " + tableOrderID);
                 }
 
                 for (MenuItem item : itemsToSendToKitchen) {

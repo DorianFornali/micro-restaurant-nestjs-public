@@ -11,20 +11,20 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+@ApplicationScoped
 @Path("/lunchState")
 public class LunchStateController {
 
 
-
+    @Inject
     BFFService bffService;
+    @Inject
     LunchStateService lunchStateService;
 
-
-    @Inject
-    public LunchStateController(BFFService bffService, LunchStateService lunchStateService) {
-        this.bffService = bffService;
-        this.lunchStateService = lunchStateService;
+    public LunchStateController() {
+        System.out.println("BFFService HashCode in LunchStateController Constructor: " + bffService.hashCode());
     }
+
 
     @POST
     @Consumes(MediaType.TEXT_PLAIN)

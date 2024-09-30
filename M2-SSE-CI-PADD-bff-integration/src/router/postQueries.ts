@@ -6,7 +6,7 @@ export const mealDetailQuery = (mealId: string) => {
     queryKey: ['mealDetail'],
     queryFn: () => {
       return new Promise((resolve, reject) => {
-        fetch(`${APP.API_URL}/menus/${mealId}`)
+        fetch(`${APP.API_GET_MENU}/${mealId}`)
           .then((res) => res.json())
           .then((data) => {
             resolve(data)

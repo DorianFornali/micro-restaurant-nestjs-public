@@ -337,7 +337,8 @@ public class BFFService {
     
         String startedTables = bridgeToService.httpGet(RestaurantService.KITCHEN, "preparations?state=preparationStarted");
         String preparedTables = bridgeToService.httpGet(RestaurantService.KITCHEN, "preparations?state=readyToBeServed");
-    
+        System.out.println("Started tables: " + startedTables);
+        System.out.println("Prepared tables: " + preparedTables);
         try { 
             ObjectMapper jsonMessageMapper = new ObjectMapper();
             List<StateBoardPerTable> startedTablesList = processTables(jsonMessageMapper, startedTables);
@@ -357,7 +358,8 @@ public class BFFService {
     private List<StateBoardPerTable> processTables(ObjectMapper jsonMessageMapper, String tables) throws IOException {
         List<StateBoardPerTable> preparations = new ArrayList<>();
         JsonNode rootNode = jsonMessageMapper.readTree(tables);
-    
+        System.out.println("Root node: " + rootNode);
+
         for (JsonNode itemNode : rootNode) {
             preparations.add(new StateBoardPerTable(itemNode.get("_id").asText(), itemNode.get("tableNumber").asText()));
         }

@@ -129,13 +129,14 @@ public class UniversalController {
         a ce moment la on fait un appel /tableOrders/{id}/bill pour cloturer la commande
          */
         // Process the paymentDetails here
+        System.out.println("Payment details debug: " + paymentDetails);
         try {
             Map<String, OrderContainer> ordersPerTable = bffService.ordersPerTable;
             System.out.println(ordersPerTable);
             List<MenuItem> supplementItems = bffService.ordersPerTable.get(numTable).getSupplementItems();
             ObjectMapper jsonMessageMapper = new ObjectMapper();
             JsonNode rootNode = jsonMessageMapper.readTree(paymentDetails);
-            JsonNode menuItemsNode = rootNode.get("supplementItmes"); // TODO - adapt the key to the actual key in the json
+            JsonNode menuItemsNode = rootNode.get("supplementItems"); 
             for (JsonNode itemNode : menuItemsNode) {
                 MenuItem menuItem = jsonMessageMapper.treeToValue(itemNode.get("menuItem"), MenuItem.class);
                 supplementItems.remove(menuItem);

@@ -37,6 +37,8 @@ public class BFFService {
     private BridgeToService bridgeToService;
     private LunchStateService lunchStateService;
     private BffConfig bffConfig;
+    @Getter
+    private TablesManager tablesManager;
 
     /** Array containing details on the table orders
      * ordersPerTable[0] contains the OrderContainer for table 0
@@ -51,6 +53,7 @@ public class BFFService {
         this.bffConfig = bffConfig;
         this.lunchStateService = lunchStateService;
         this.ordersPerTable = new HashMap<>();
+        this.tablesManager = new TablesManager();
         System.out.println("BFFService instance created. HashCode: " + this.hashCode());
     }
 
@@ -66,6 +69,13 @@ public class BFFService {
                 /* Handle of the menuItems */
                 JsonNode menuItemsNode = rootNode.get("menuItems");
                 System.out.println("Succesfully retrieved menuItems: " + menuItemsNode);
+
+                JsonNode peopleNode = rootNode.get("people");
+                List<String> people = new ArrayList<>();
+                for (JsonNode personNode : peopleNode) {
+                    people.add(personNode.get("name").asText());
+                    System.out.println("Succesfully retrieved person: " + personNode.get("name").asText());
+                }
 
                 List<MenuItem> menuItems = new ArrayList<>();
                 List<MenuItem> itemsToSendToKitchen = new ArrayList<>(); // pass the drinks to the next step
@@ -129,11 +139,17 @@ public class BFFService {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+
+                // Finally the tables logic, we add the people to the table in the tablesManager
+                tablesManager.addOrderedPerson(tableNumber, people);
             }
 
             catch (Exception e){
                 e.printStackTrace();
             }
+
+
+
     }
 
     /** Occurs when we advance one step in the lunch, sends the corresponding

@@ -187,4 +187,32 @@ public class UniversalController {
         */
         return Response.ok(bffService.getStateBoard().toString()).build();
     }
+
+    // -----------------------------------------------------------------------------------
+    // Tables related  --------------------------------
+    // -----------------------------------------------------------------------------------
+
+
+    @GET
+    @Path("/tables")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getTables() {
+        return Response.ok(bffService.getTablesManager().getTables().toString()).build();
+    }
+
+    @GET
+    @Path("/tables/checkPerson")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response checkIfPersonHasOrdered(@QueryParam("tableNumber") String tableNumber, @QueryParam("personName") String personName) {
+        boolean hasOrdered = bffService.getTablesManager().hasThisPersonAlreadyOrdered(personName, tableNumber);
+        return Response.ok(Boolean.toString(hasOrdered)).build();
+    }
+
+    @GET
+    @Path("/tables/getPersons")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getPersonsOrderedAtTable() {
+        return Response.ok(bffService.getTablesManager().getAlreadyOrderedPersons().toString()).build();
+    }
+
 }

@@ -1,5 +1,16 @@
 {
     "tableNumber" : "1",
+    "people":  [
+        {
+            "name": "Pierre"
+        },
+        {
+            "name": "Paul"
+        },
+        {
+            "name": "Jacques"
+        }
+    ],
     "menuItems" : [
         {
             "menuItem": {

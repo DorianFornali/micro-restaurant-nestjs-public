@@ -1,0 +1,49 @@
+{
+  "home": {
+    "startOrder": "I order",
+    "start": "Touch to start",
+    "startPayment": "I pay the extras"
+  },
+  "command": {
+    "tableStep": {
+      "title": "What is your table number?",
+      "label": "Table number",
+      "placeholder": "Ex: 12",
+      "next": "Next"
+    },
+    "peopleStep": {
+      "title": "How many people are you?",
+      "label": "Number of people",
+      "placeholder": "Ex: 4",
+      "next": "Next"
+    },
+    "mealStep": {
+      "back": "Back",
+      "next": "Next",
+      "primary": "Order",
+      "secondary": "See the order"
+    }
+  },
+  "component": {
+    "mealCard": {
+      "modal": {
+        "title": "For how many people?",
+        "label": "Number of people",
+        "submit": "Add"
+      }
+    }
+  },
+  "404": {
+    "title": "404 - Page not found",
+    "back": "Back to home"
+  },
+  "state-board": {
+    "starter": "Starter",
+    "main": "Main",
+    "dessert": "Dessert"
+  },
+  "final": {
+    "title": "Thank you and see you soon!",
+    "back": "Back to home"
+  }
+}

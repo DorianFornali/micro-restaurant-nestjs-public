@@ -1,0 +1,80 @@
+{
+  "home": {
+    "startOrder": "Je commande",
+    "start": "Appuyer pour commencer",
+    "startPayment": "Je règle les suppléments"
+  },
+  "menu": {
+    "STARTER": "Entrées",
+    "MAIN": "Plats",
+    "DESSERT": "Desserts",
+    "BEVERAGE": "Boissons",
+    "ADDON": "Suppléments"
+  },
+  "command": {
+    "tableStep": {
+      "title": "Quel est le numéro de table qui vous a été affecté ?",
+      "titlePayment": "Quel est votre numéro de table ?",
+      "label": "Numéro de table",
+      "placeholder": "Ex: 12",
+      "next": "Suivant"
+    },
+    "peopleStep": {
+      "title": "Combien de personnes êtes-vous ?",
+      "label": "Nombre de personnes",
+      "placeholder": "Ex: 4",
+      "next": "Suivant"
+    },
+    "mealStep": {
+      "back": "Retour",
+      "next": "Suivant",
+      "primary": "Commander",
+      "secondary": "Voir la commande"
+    }
+  },
+  "payment": {
+    "itemSelectionStep": {
+      "back": "Retour",
+      "title": "Que souhaitez-vous régler ?",
+      "select": "Sélectionner",
+      "deselect": "Désélectionner",
+      "payment": "Payer la sélection",
+      "totalPriceSelected": "Prix de la sélection:",
+      "pay": "Payer",
+      "remainingTotal": "Total restant à payer:",
+      "splitBill": "Séparer l'addition",
+      "payForEverything": "Tout payer"
+    },
+    "paymentStep": {
+      "paymentInProgress": "Paiement en cours ..."
+    },
+    "splitPaymentStep": {
+      "remainingPrice": "Prix restant à payer:",
+      "numberOfPeople": "Partager entre combien de personnes ?",
+      "pricePerPerson": "Prix par personne:"
+    }
+  },
+  "component": {
+    "mealCard": {
+      "modal": {
+        "title": "Pour combien de personnes ?",
+        "label": "Nombre de personnes",
+        "submit": "Ajouter"
+      },
+      "details-button": "Détails"
+    }
+  },
+  "404": {
+    "title": "404 - Page non trouvée",
+    "back": "Retour à l'accueil"
+  },
+  "state-board": {
+    "starter": "Entrée",
+    "main": "Plat",
+    "dessert": "Dessert"
+  },
+  "final": {
+    "title": "Merci et à bientôt !",
+    "back": "Retour à l'accueil"
+  }
+}

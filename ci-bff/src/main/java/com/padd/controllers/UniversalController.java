@@ -129,21 +129,41 @@ public class UniversalController {
         a ce moment la on fait un appel /tableOrders/{id}/bill pour cloturer la commande
          */
         // Process the paymentDetails here
+        System.out.println( "Payment details: " + paymentDetails);
         try {
             Map<String, OrderContainer> ordersPerTable = bffService.ordersPerTable;
-            System.out.println(ordersPerTable);
             List<MenuItem> supplementItems = bffService.ordersPerTable.get(numTable).getSupplementItems();
             ObjectMapper jsonMessageMapper = new ObjectMapper();
             JsonNode rootNode = jsonMessageMapper.readTree(paymentDetails);
-            JsonNode menuItemsNode = rootNode.get("supplementItmes"); // TODO - adapt the key to the actual key in the json
+            JsonNode menuItemsNode = rootNode.get("supplementItems");
+
+            System.out.println("MenuItemsNode: " + menuItemsNode);
+            System.out.println("Supplements items of table " + numTable + " before payment: ");
+            for(MenuItem item : supplementItems) {
+                System.out.println(item.get_id());
+            }
+
             for (JsonNode itemNode : menuItemsNode) {
                 MenuItem menuItem = jsonMessageMapper.treeToValue(itemNode.get("menuItem"), MenuItem.class);
-                supplementItems.remove(menuItem);
+                System.out.println("Trying to remove item: " + itemNode + "with id: " + menuItem.get_id());
+
+                // We compare the id of the menuItem to remove with the id of the items in the list
+
+                for (MenuItem item : supplementItems) {
+                    if (item.get_id().equals(menuItem.get_id())) {
+                        System.out.println("Found matching item, removing it, id: " + item.get_id());
+                        supplementItems.remove(item);
+                        break;
+                    }
+                }
             }
+
+            System.out.println("Supplement items after payment: " + supplementItems);
+
             bffService.ordersPerTable.get(numTable).setSupplementItems(supplementItems);
             if (supplementItems.isEmpty()) {
-                bffService.getBridgeToService().httpPost(RestaurantService.DINING, "/tableOrders/" + bffService.getTableOrderId(numTable) + "/bill", "");
-
+                System.out.println("no more supplements to pay for table " + numTable+ ", sending bill request");
+                bffService.getBridgeToService().httpPost(RestaurantService.DINING, "tableOrders/" + bffService.getTableOrderId(numTable) + "/bill", "");
             }
         }
         catch (Exception e) {

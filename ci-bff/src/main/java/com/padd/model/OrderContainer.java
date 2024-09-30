@@ -46,6 +46,7 @@ public class OrderContainer {
      */
     public void addMenuItem(MenuItem item) {
         if (item.isSupplement() == true){
+            System.out.println("Found a supplements item with ID: " + item.get_id() + " and name: " + item.getShortName());
             supplementItems.add(item);
         }
         menuItems.add(item);

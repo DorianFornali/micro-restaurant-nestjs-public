@@ -185,7 +185,7 @@ public class UniversalController {
         We just GET HTTP the kitchen to get the state of the preparations for each table
         and we return a list for each table with the time remaining
         */
-        return Response.ok(bffService.getStateBoard().toString()).build();
+        return Response.ok(bffService.getStateBoard().toJson()).build();
     }
 
     // -----------------------------------------------------------------------------------

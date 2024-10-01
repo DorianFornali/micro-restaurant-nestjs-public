@@ -10,10 +10,10 @@ export enum MenuItemCategoryCustom {
 }
 
 export enum MenuItemCategoryAll {
-  BEVERAGE = 'BEVERAGE',
   STARTER = 'STARTER',
   MAIN = 'MAIN',
   DESSERT = 'DESSERT',
+  BEVERAGE = 'BEVERAGE',
   ADDON = 'ADDON',
 }
 

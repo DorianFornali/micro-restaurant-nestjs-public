@@ -2,6 +2,8 @@ package com.padd.model;
 import lombok.Getter;
 import lombok.Setter;
 import java.util.List;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 
 @Getter
@@ -16,9 +18,21 @@ public class StateBoard {
     }
     @Override
     public String toString() {
-        return "StateBoard{" +
-            "preparationStarted=" + preparationStarted +
-            ", readyToBeServed=" + readyToBeServed +
+        return "{" +
+            "preparationStarted:" + preparationStarted +
+            ", readyToBeServed:" + readyToBeServed +
             '}';
     }
+
+
+    public String toJson() {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.writeValueAsString(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+}
+
 }

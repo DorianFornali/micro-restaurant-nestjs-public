@@ -1,7 +1,11 @@
 package com.padd;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +63,47 @@ public class TablesManager {
             return alreadyOrderedPersons.get(table).contains(person);
         }
         return false;
+    }
+
+    public String tableArrayToJson() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode rootNode = objectMapper.createObjectNode();
+        ArrayNode tablesArray = objectMapper.createArrayNode();
+
+        for (Map.Entry<String, List<String>> entry : tables.entrySet()) {
+            ObjectNode tableNode = objectMapper.createObjectNode();
+            tableNode.put("tableNumber", Integer.parseInt(entry.getKey()));
+            tableNode.putPOJO("people", entry.getValue());
+            tablesArray.add(tableNode);
+        }
+
+        rootNode.set("tables", tablesArray);
+        try {
+            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "{}";
+        }
+    }
+
+    public String getOrderersToJson(String tableNumero) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode tableNode = objectMapper.createObjectNode();
+
+        List<String> initialPeople = tables.getOrDefault(tableNumero, List.of());
+        List<String> orderedPeople = alreadyOrderedPersons.getOrDefault(tableNumero, List.of());
+
+        boolean allHaveOrdered = orderedPeople.containsAll(initialPeople);
+
+        tableNode.putPOJO("peopleWhichOrdered", orderedPeople);
+        tableNode.put("allHaveOrdered", allHaveOrdered);
+
+        try {
+            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(tableNode);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "{}";
+        }
     }
 
 }

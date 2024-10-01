@@ -197,7 +197,7 @@ public class UniversalController {
     @Path("/tables")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTables() {
-        return Response.ok(bffService.getTablesManager().getTables().toString()).build();
+        return Response.ok(bffService.getTablesManager().tableArrayToJson()).build();
     }
 
     @GET
@@ -209,10 +209,10 @@ public class UniversalController {
     }
 
     @GET
-    @Path("/tables/getPersons")
+    @Path("/tables/getPersons/{tableNumero}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getPersonsOrderedAtTable() {
-        return Response.ok(bffService.getTablesManager().getAlreadyOrderedPersons().toString()).build();
+    public Response getPersonsOrderedAtTable(@PathParam("tableNumero") String tableNumero) {
+        return Response.ok(bffService.getTablesManager().getOrderersToJson(tableNumero)).build();
     }
 
 }

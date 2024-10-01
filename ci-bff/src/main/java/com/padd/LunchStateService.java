@@ -43,7 +43,7 @@ public class LunchStateService {
         bffService.sendDishesToKitchen(this.currentLunchState.toString());
 
         // Return a successful response
-        return Response.ok("Successfully advanced to state: " + this.currentLunchState).build();
+        return Response.ok(this.currentLunchState).build();
     }
 
     public List<String> getTypesToSendToKitchen(){

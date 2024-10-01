@@ -106,4 +106,25 @@ public class TablesManager {
         }
     }
 
+    public String getAllOrderersToJson() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode rootNode = objectMapper.createObjectNode();
+        ArrayNode tablesArray = objectMapper.createArrayNode();
+
+        for (Map.Entry<String, List<String>> entry : alreadyOrderedPersons.entrySet()) {
+            ObjectNode tableNode = objectMapper.createObjectNode();
+            tableNode.put("tableNumber", Integer.parseInt(entry.getKey()));
+            tableNode.putPOJO("peopleWhichOrdered", entry.getValue());
+            tablesArray.add(tableNode);
+        }
+
+        rootNode.set("tables", tablesArray);
+        try {
+            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "{}";
+        }
+    }
+
 }

@@ -1,5 +1,7 @@
 package com.padd.controllers;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.padd.model.OrderContainer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -72,6 +74,34 @@ public class UniversalController {
     }
 
     // ------------ Payment flow related endpoints ------------
+
+    @GET
+    @Path("/supplements")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getSupplements() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode rootNode = objectMapper.createObjectNode();
+        JsonNode tablesArray = objectMapper.createArrayNode();
+
+        for (Map.Entry<String, OrderContainer> entry : bffService.ordersPerTable.entrySet()) {
+            String tableNumber = entry.getKey();
+            OrderContainer orderContainer = entry.getValue();
+            List<MenuItem> supplementItems = orderContainer.getSupplementItems();
+            JsonNode tableNode = objectMapper.createObjectNode();
+            ((ObjectNode) tableNode).put("tableNumber", tableNumber);
+            ((ObjectNode) tableNode).putPOJO("supplementItems", supplementItems);
+            ((ArrayNode) tablesArray).add(tableNode);
+        }
+
+        ((ObjectNode) rootNode).set("tables", tablesArray);
+
+        try {
+            return Response.ok(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode)).build();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error converting supplements to JSON").build();
+        }
+    }
 
     @GET
     @Path("/supplements/{numTable}")
@@ -215,4 +245,10 @@ public class UniversalController {
         return Response.ok(bffService.getTablesManager().getOrderersToJson(tableNumero)).build();
     }
 
+    @GET
+    @Path("/tables/getPersons")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getPersonsOrderedAtTable() {
+        return Response.ok(bffService.getTablesManager().getAllOrderersToJson()).build();
+    }
 }

@@ -40,9 +40,10 @@ public class BFFService {
     @Getter
     private TablesManager tablesManager;
 
-    /** Array containing details on the table orders
+    /**
+     * Array containing details on the table orders
      * ordersPerTable[0] contains the OrderContainer for table 0
-     * */
+     */
     @Getter
     @Setter
     public Map<String, OrderContainer> ordersPerTable;
@@ -58,105 +59,102 @@ public class BFFService {
     }
 
     public void handleIncomingOrder(String postBody) {
-            try {
-                
-                ObjectMapper jsonMessageMapper = new ObjectMapper();
-                JsonNode rootNode = jsonMessageMapper.readTree(postBody);
+        try {
 
-                String tableNumber = rootNode.get("tableNumber").asText();
-                System.out.println("Succesfully retrieved table number: " + tableNumber);
+            ObjectMapper jsonMessageMapper = new ObjectMapper();
+            JsonNode rootNode = jsonMessageMapper.readTree(postBody);
 
-                /* Handle of the menuItems */
-                JsonNode menuItemsNode = rootNode.get("menuItems");
-                System.out.println("Succesfully retrieved menuItems: " + menuItemsNode);
+            String tableNumber = rootNode.get("tableNumber").asText();
+            System.out.println("Succesfully retrieved table number: " + tableNumber);
 
-                JsonNode peopleNode = rootNode.get("people");
-                List<String> people = new ArrayList<>();
-                for (JsonNode personNode : peopleNode) {
-                    people.add(personNode.get("name").asText());
-                    System.out.println("Succesfully retrieved person: " + personNode.get("name").asText());
-                }
+            /* Handle of the menuItems */
+            JsonNode menuItemsNode = rootNode.get("menuItems");
+            System.out.println("Succesfully retrieved menuItems: " + menuItemsNode);
 
-                List<MenuItem> menuItems = new ArrayList<>();
-                List<MenuItem> itemsToSendToKitchen = new ArrayList<>(); // pass the drinks to the next step
-                List<String> typesToSendToKitchen = lunchStateService.getTypesToSendToKitchen();
-
-                for (JsonNode itemNode : menuItemsNode) {
-                    System.out.println(tableNumber + " is ordering: " + itemNode.get("menuItem"));
-                    MenuItem menuItem = jsonMessageMapper.treeToValue(itemNode.get("menuItem"), MenuItem.class);
-                    
-                    System.out.println("Test: Succesfully retrieved menuItem: " + menuItem);
-                    menuItems.add(menuItem);
-
-                    if (typesToSendToKitchen.contains(menuItem.getCategory())) {
-                        itemsToSendToKitchen.add(menuItem);
-                    }
-                }
-
-                // We do our first TableOrders post to get our tableOrderID
-
-                String tableOrderID = "";
-                OrderContainer orderContainer = ordersPerTable.get(tableNumber);
-
-                if(orderContainer != null){
-                    tableOrderID = orderContainer.getAssociatedTableOrderID();
-
-                    System.out.println("Table order already exists, updating entry for table: " + tableNumber);
-                    for (MenuItem menuItem : menuItems) {
-                        System.out.println("Adding item to order container of table: " + tableNumber + " item: " + menuItem.toPrettyString());
-                        orderContainer.addMenuItem(menuItem);
-                    }
-                    System.out.println("Updated entry for table: " + tableNumber);
-                }
-                else {
-                    System.out.println("First order for that table, creating tableOrder by sending body: {\"tableNumber\": " + tableNumber + ", \"customersCount\": 1}");
-
-                    // DEBUG---------
-                    tableOrderID = getTableOrderIDFromHTTPResponse(
-                            bridgeToService.httpPost(RestaurantService.DINING, "tableOrders", "{\"tableNumber\": " + tableNumber + ", \"customersCount\": 1}")
-                    );
-
-                    orderContainer = new OrderContainer(tableOrderID, menuItems);
-                    ordersPerTable.put(tableNumber, orderContainer);
-                    System.out.println("Orders per table updated: " + ordersPerTable.get(tableNumber).getSupplementItems());
-                    System.out.println("Created new entry for table: " + tableNumber);
-                }
-
-                for (MenuItem item : itemsToSendToKitchen) {
-                    sendMenuItemToTableOrder(tableOrderID, item);
-                }
-
-                sendTableOrderToKitchen(tableOrderID);
-                try {
-                    new Thread(() -> {
-                        try {
-                            System.out.println("Starting cooking process for eligible dishes ...");
-                            startCooking(Integer.parseInt(tableNumber));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }).start();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-                // Finally the tables logic, we add the people to the table in the tablesManager
-                tablesManager.addOrderedPerson(tableNumber, people);
+            JsonNode peopleNode = rootNode.get("people");
+            List<String> people = new ArrayList<>();
+            for (JsonNode personNode : peopleNode) {
+                people.add(personNode.get("name").asText());
+                System.out.println("Succesfully retrieved person: " + personNode.get("name").asText());
             }
 
-            catch (Exception e){
+            List<MenuItem> menuItems = new ArrayList<>();
+            List<MenuItem> itemsToSendToKitchen = new ArrayList<>(); // pass the drinks to the next step
+            List<String> typesToSendToKitchen = lunchStateService.getTypesToSendToKitchen();
+
+            for (JsonNode itemNode : menuItemsNode) {
+                System.out.println(tableNumber + " is ordering: " + itemNode.get("menuItem"));
+                MenuItem menuItem = jsonMessageMapper.treeToValue(itemNode.get("menuItem"), MenuItem.class);
+
+                System.out.println("Test: Succesfully retrieved menuItem: " + menuItem);
+                menuItems.add(menuItem);
+
+                if (typesToSendToKitchen.contains(menuItem.getCategory())) {
+                    itemsToSendToKitchen.add(menuItem);
+                }
+            }
+
+            // We do our first TableOrders post to get our tableOrderID
+
+            String tableOrderID = "";
+            OrderContainer orderContainer = ordersPerTable.get(tableNumber);
+
+            if (orderContainer != null) {
+                tableOrderID = orderContainer.getAssociatedTableOrderID();
+
+                System.out.println("Table order already exists, updating entry for table: " + tableNumber);
+                for (MenuItem menuItem : menuItems) {
+                    System.out.println("Adding item to order container of table: " + tableNumber + " item: " + menuItem.toPrettyString());
+                    orderContainer.addMenuItem(menuItem);
+                }
+                System.out.println("Updated entry for table: " + tableNumber);
+            } else {
+                System.out.println("First order for that table, creating tableOrder by sending body: {\"tableNumber\": " + tableNumber + ", \"customersCount\": 1}");
+
+                // DEBUG---------
+                tableOrderID = getTableOrderIDFromHTTPResponse(
+                        bridgeToService.httpPost(RestaurantService.DINING, "tableOrders", "{\"tableNumber\": " + tableNumber + ", \"customersCount\": 1}")
+                );
+
+                orderContainer = new OrderContainer(tableOrderID, menuItems);
+                ordersPerTable.put(tableNumber, orderContainer);
+                System.out.println("Orders per table updated: " + ordersPerTable.get(tableNumber).getSupplementItems());
+                System.out.println("Created new entry for table: " + tableNumber);
+            }
+
+            for (MenuItem item : itemsToSendToKitchen) {
+                sendMenuItemToTableOrder(tableOrderID, item);
+            }
+
+            sendTableOrderToKitchen(tableOrderID);
+            try {
+                new Thread(() -> {
+                    try {
+                        System.out.println("Starting cooking process for eligible dishes ...");
+                        startCooking(Integer.parseInt(tableNumber));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }).start();
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
+            // Finally the tables logic, we add the people to the table in the tablesManager
+            tablesManager.addOrderedPerson(tableNumber, people);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
 
     }
 
-    /** Occurs when we advance one step in the lunch, sends the corresponding
+    /**
+     * Occurs when we advance one step in the lunch, sends the corresponding
      * (already ordered) dishes to the kitchen. For instance, if we are at
      * the STARTER state, we send the starters and the drinks to the kitchen.
-     * */
-    public void sendDishesToKitchen(String typeToSendToKitchen){
+     */
+    public void sendDishesToKitchen(String typeToSendToKitchen) {
         // We iterate over the map, for each table we will make a post /tableOrders where we put the
         // items of the typeToSendToKitchen
 
@@ -177,12 +175,23 @@ public class BFFService {
 
             // And we start the cooking process
             System.out.println("STARTING COOKING PROCESS FOR TABLE: " + entry.getKey() + " ...");
-            startCooking(Integer.parseInt(entry.getKey()));
 
+            try {
+                new Thread(() -> {
+                    try {
+                        System.out.println("Starting cooking process for eligible dishes ...");
+                        startCooking(Integer.parseInt(entry.getKey()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }).start();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    private void sendMenuItemToTableOrder(String tableOrderID, MenuItem item){
+    private void sendMenuItemToTableOrder(String tableOrderID, MenuItem item) {
         String postBodyItem = "{\"menuItemId\": \"" + item.get_id() + "\", " +
                 "\"menuItemShortName\": \"" + item.getShortName() + "\", " +
                 "\"howMany\":" + 1 + "}";
@@ -194,80 +203,85 @@ public class BFFService {
                 postBodyItem);
     }
 
-    private void sendTableOrderToKitchen(String tableOrderID){
+    private void sendTableOrderToKitchen(String tableOrderID) {
         System.out.println("Preparing table order for tableOrderID: " + tableOrderID);
         bridgeToService.httpPost(RestaurantService.DINING,
                 "tableOrders/" + tableOrderID + "/prepare",
                 "");
     }
 
-    public String getTableOrderId(String numeroTable){
+    public String getTableOrderId(String numeroTable) {
         return ordersPerTable.get(numeroTable).getAssociatedTableOrderID();
     }
 
-    public String getTableOrderIDFromHTTPResponse(String response){
+    public String getTableOrderIDFromHTTPResponse(String response) {
         try {
             ObjectMapper jsonMessageMapper = new ObjectMapper();
             JsonNode rootNode = jsonMessageMapper.readTree(response);
             System.out.println("Mapping ID from response json, id:" + rootNode.get("_id").asText());
 
             return rootNode.get("_id").asText();
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    public void startCooking(int tableNumber){
+    public void startCooking(int tableNumber) {
         List<PreparedItem> preparedItems = new ArrayList<>();
 
-        System.out.println("Trying to /start cooking for table: " + tableNumber);
-
-
         try {
-            System.out.println("Calling the kitchen to get prepared items for HOT DISHES ...");
-            String hotDishResponse = bridgeToService.httpGet(RestaurantService.KITCHEN, "preparedItems?post=HOT_DISH");
-            System.out.println("Calling the kitchen to get prepared items for COLD DISHES ...");
-            String coldDishResponse = bridgeToService.httpGet(RestaurantService.KITCHEN, "preparedItems?post=COLD_DISH");
-            System.out.println("Calling the kitchen to get prepared items for BAR ...");
-            String barResponse = bridgeToService.httpGet(RestaurantService.KITCHEN, "preparedItems?post=BAR");
+
+            // Modified flow: we get the tableOrders/tableorderID, iterate over all the preparations
+            // and call get /preparedItems/preparedItemID to get the preparedItem, if has not been started yet
+            // We add it to the list of preparedItems
+
+
+            System.out.println("GET request to /tableOrders/" + ordersPerTable.get(String.valueOf(tableNumber)).getAssociatedTableOrderID());
+            String tableOrderID = ordersPerTable.get(String.valueOf(tableNumber)).getAssociatedTableOrderID();
+            String tableOrderResponse = bridgeToService.httpGet(RestaurantService.DINING, "tableOrders/" + tableOrderID);
+            System.out.println("Response from /tableOrders/" + tableOrderID + ": " + tableOrderResponse);
+
 
             ObjectMapper jsonMessageMapper = new ObjectMapper();
-            JsonNode hotDishRootNode = jsonMessageMapper.readTree(hotDishResponse);
-            JsonNode coldDishRootNode = jsonMessageMapper.readTree(coldDishResponse);
-            JsonNode barRootNode = jsonMessageMapper.readTree(barResponse);
+            JsonNode rootNode = jsonMessageMapper.readTree(tableOrderResponse);
 
-            for (JsonNode itemNode : hotDishRootNode) {
-                PreparedItem preparedItem = jsonMessageMapper.treeToValue(itemNode, PreparedItem.class);
-                preparedItems.add(preparedItem);
+            JsonNode preparationsNode = rootNode.get("preparations");
+
+            if (preparationsNode != null) {
+                for (JsonNode preparationNode : preparationsNode) {
+                    if (preparationNode != null && preparationNode.has("preparedItems")) {
+                        JsonNode preparedItemsNode = preparationNode.get("preparedItems");
+                        for (JsonNode itemNode : preparedItemsNode) {
+                            if (itemNode != null) {
+                                // At this state we must get the preparedItemID
+                                // We will create the preparedItem based on a request to the kitchen
+                                String preparedItemID = itemNode.get("_id").asText();
+                                System.out.println("Sending GET request to /preparedItems/" + preparedItemID);
+                                String preparedItemResponse = bridgeToService.httpGet(RestaurantService.KITCHEN, "preparedItems/" + preparedItemID);
+                                JsonNode preparedItemRootNode = jsonMessageMapper.readTree(preparedItemResponse);
+
+                                PreparedItem preparedItem = jsonMessageMapper.treeToValue(preparedItemRootNode, PreparedItem.class);
+                                if (preparedItem.getFinishedAt() == null) {
+                                    preparedItems.add(preparedItem);
+                                    System.out.println("Found preparedItem not started yet for table: " + tableNumber + " item: " + preparedItem.getShortName());
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
-            for (JsonNode itemNode : coldDishRootNode) {
-                PreparedItem preparedItem = jsonMessageMapper.treeToValue(itemNode, PreparedItem.class);
-                preparedItems.add(preparedItem);
-            }
-
-            for (JsonNode itemNode : barRootNode) {
-                PreparedItem preparedItem = jsonMessageMapper.treeToValue(itemNode, PreparedItem.class);
-                preparedItems.add(preparedItem);
-            }
-
-            for(PreparedItem item : preparedItems){
-                System.out.println("Found following Prepared item: " + item.getShortName());
-            }
-
-            System.out.println("Now starting the cooking process...");
 
             // We create a thread for each preparedItem
             List<Thread> threads = new ArrayList<>();
             for (PreparedItem item : preparedItems) {
                 if (item.getFinishedAt() == null) {
-                    System.out.println("Item " + item.getShortName() + " has finishedAt field to null ...");
                     Thread thread = new Thread(() -> {
+                        System.out.println("Inner thread created to handle item: " + item.getShortName() + " for table: " + tableNumber);
                         try {
                             // We start the preparation
-                            System.out.println("Starting preparation for item: " + item.getShortName());
+                            System.out.println("Sending /start for item: " + item.getShortName() + " for table: " + tableNumber);
                             bridgeToService.httpPost(RestaurantService.KITCHEN, "preparedItems/" + item.get_id() + "/start", "");
 
                             // We wait for a random time, between 5 and 10 seconds
@@ -275,7 +289,7 @@ public class BFFService {
                             Thread.sleep(randomTime * 1000L);
 
                             // We finish the preparation
-                            System.out.println("Finishing preparation for item: " + item.getShortName());
+                            System.out.println("Sending /finish for item: " + item.getShortName() + " for table: " + tableNumber);
                             bridgeToService.httpPost(RestaurantService.KITCHEN, "preparedItems/" + item.get_id() + "/finish", "");
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -291,44 +305,34 @@ public class BFFService {
             for (Thread thread : threads) {
                 System.out.println("Waiting for thread" + thread.hashCode() + " to finish...");
                 thread.join();
+                System.out.println("Thread" + thread.hashCode() + " has finished!");
             }
 
-            System.out.println("All threads have finished, all dishes have been cooked! :");
+            System.out.println("All threads have finished, at this point all dishes should be ready to be served for table: " + tableNumber + " now sleeping 20s");
 
-            new Thread(() -> {
-                try {
-                    System.out.println("Thread sleeping 20s before taking dishes to table ...");
-                    Thread.sleep(20000);
-                    System.out.println("Now trying to take the dishes of that table to the table ...");
+            Thread.sleep(20000);
+            System.out.println("Now /takenToTable for table: " + tableNumber);
 
-                    // We call the /takenToTable endpoint on every preparation
-                    // We first get the preparations for the table at /preparations?state=readyToBeServed
+            // We call the /takenToTable endpoint on every preparation
+            // We first get the preparations for the table at /preparations?state=readyToBeServed
 
-                    String readyToBeServedResponse = bridgeToService.httpGet(RestaurantService.KITCHEN, "preparations?state=readyToBeServed");
-                    // We fetch the _id field for every preparation in the response
+            String readyToBeServedResponse = bridgeToService.httpGet(RestaurantService.KITCHEN, "preparations?state=readyToBeServed");
+            // We fetch the _id field for every preparation in the response
 
-                    JsonNode readyToBeServedRootNode = jsonMessageMapper.readTree(readyToBeServedResponse);
-                    List<String> preparationIds = new ArrayList<>();
-                    for (JsonNode itemNode : readyToBeServedRootNode) {
-                        preparationIds.add(itemNode.get("_id").asText());
-                    }
+            JsonNode readyToBeServedRootNode = jsonMessageMapper.readTree(readyToBeServedResponse);
+            List<String> preparationIds = new ArrayList<>();
+            for (JsonNode itemNode : readyToBeServedRootNode) {
+                preparationIds.add(itemNode.get("_id").asText());
+            }
 
-                    // We call the /takenToTable endpoint on every preparation
-                    for (String preparationId : preparationIds) {
-                        System.out.println("Taking preparation with id: " + preparationId + " to the table ...");
-                        bridgeToService.httpPost(RestaurantService.KITCHEN, "preparations/" + preparationId + "/takenToTable", "");
-                    }
-
-                } catch (InterruptedException | IOException e) {
-                    e.printStackTrace();
-                }
-
-            }).start();
-
+            // We call the /takenToTable endpoint on every preparation
+            for (String preparationId : preparationIds) {
+                System.out.println("Taking preparation with id: " + preparationId + " to the table ...");
+                bridgeToService.httpPost(RestaurantService.KITCHEN, "preparations/" + preparationId + "/takenToTable", "");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
 
@@ -337,9 +341,7 @@ public class BFFService {
     
         String startedTables = bridgeToService.httpGet(RestaurantService.KITCHEN, "preparations?state=preparationStarted");
         String preparedTables = bridgeToService.httpGet(RestaurantService.KITCHEN, "preparations?state=readyToBeServed");
-        System.out.println("Started tables: " + startedTables);
-        System.out.println("Prepared tables: " + preparedTables);
-        try { 
+        try {
             ObjectMapper jsonMessageMapper = new ObjectMapper();
             List<StateBoardPerTable> startedTablesList = processTables(jsonMessageMapper, startedTables);
             List<StateBoardPerTable> readyToBeServedList = processTables(jsonMessageMapper, preparedTables);
@@ -358,7 +360,6 @@ public class BFFService {
     private List<StateBoardPerTable> processTables(ObjectMapper jsonMessageMapper, String tables) throws IOException {
         List<StateBoardPerTable> preparations = new ArrayList<>();
         JsonNode rootNode = jsonMessageMapper.readTree(tables);
-        System.out.println("Root node: " + rootNode);
 
         for (JsonNode itemNode : rootNode) {
             preparations.add(new StateBoardPerTable(itemNode.get("_id").asText(), itemNode.get("tableNumber").asText()));

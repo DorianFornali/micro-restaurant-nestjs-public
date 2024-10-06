@@ -17,11 +17,11 @@ public class BridgeToService {
     BffConfig bffConfig;
 
     public BridgeToService(BffConfig bffConfig) {
-        System.out.println("Creating bridge to service");
         this.bffConfig = bffConfig;
     }
 
     public String httpGet(RestaurantService restaurantService, String resourceTarget) {
+        System.out.println("-- HTTP GET at " + restaurantService + "/" + resourceTarget + " -- ");
         HttpURLConnection conn;
         switch (restaurantService) {
             case DINING:
@@ -39,6 +39,7 @@ public class BridgeToService {
     }
 
     public String httpPost(RestaurantService restaurantService, String resourceTarget, String body) {
+        System.out.println("-- HTTP POST at " + restaurantService + "/" + resourceTarget + " -- ");
         String urlString = getUrlString(restaurantService, resourceTarget);
         if (urlString == null) {
             System.err.println("Connection to " + restaurantService + " failed");

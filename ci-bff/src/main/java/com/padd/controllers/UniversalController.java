@@ -26,7 +26,6 @@ public class UniversalController {
     @Inject
     public UniversalController(BFFService bffService) {
         this.bffService = bffService;
-        System.out.println("BFFService HashCode in UniversalController Constructor: " + bffService.hashCode());
     }
 
     // -----------------------------------------------------------------------------------
@@ -79,6 +78,7 @@ public class UniversalController {
     @Path("/supplements")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSupplements() {
+        System.out.println("Received request to get supplements");
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode rootNode = objectMapper.createObjectNode();
         JsonNode tablesArray = objectMapper.createArrayNode();
@@ -215,6 +215,7 @@ public class UniversalController {
         We just GET HTTP the kitchen to get the state of the preparations for each table
         and we return a list for each table with the time remaining
         */
+        System.out.println("Request received on BFF to GET preparations");
         return Response.ok(bffService.getStateBoard().toJson()).build();
     }
 
@@ -227,6 +228,7 @@ public class UniversalController {
     @Path("/tables")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTables() {
+        System.out.println("Request received on BFF to GET tables");
         return Response.ok(bffService.getTablesManager().tableArrayToJson()).build();
     }
 
@@ -234,6 +236,7 @@ public class UniversalController {
     @Path("/tables/checkPerson")
     @Produces(MediaType.TEXT_PLAIN)
     public Response checkIfPersonHasOrdered(@QueryParam("tableNumber") String tableNumber, @QueryParam("personName") String personName) {
+        System.out.println("Request received on BFF to check if " + personName + " has ordered at table " + tableNumber);
         boolean hasOrdered = bffService.getTablesManager().hasThisPersonAlreadyOrdered(personName, tableNumber);
         return Response.ok(Boolean.toString(hasOrdered)).build();
     }
@@ -242,6 +245,7 @@ public class UniversalController {
     @Path("/tables/getPersons/{tableNumero}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getPersonsOrderedAtTable(@PathParam("tableNumero") String tableNumero) {
+        System.out.println("Request received on BFF to GET persons who ordered at table " + tableNumero);
         return Response.ok(bffService.getTablesManager().getOrderersToJson(tableNumero)).build();
     }
 
@@ -249,6 +253,7 @@ public class UniversalController {
     @Path("/tables/getPersons")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getPersonsOrderedAtTable() {
+        System.out.println("Request received on BFF to GET persons who ordered at all tables");
         return Response.ok(bffService.getTablesManager().getAllOrderersToJson()).build();
     }
 }

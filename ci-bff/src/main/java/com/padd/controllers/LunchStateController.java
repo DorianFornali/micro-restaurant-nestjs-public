@@ -23,7 +23,7 @@ public class LunchStateController {
 
     @Inject
     public LunchStateController(BFFService bffService) {
-        System.out.println("BFFService HashCode in LunchStateController Constructor: " + bffService.hashCode());
+        this.bffService = bffService;
     }
 
 

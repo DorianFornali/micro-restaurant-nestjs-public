@@ -30,6 +30,8 @@ public class EventService {
             // First we get the event name
             String eventName = rootNode.get("name").asText();
 
+            System.out.println("Creating or modifying event: " + eventName);
+
             // Then we get the date
             String date = rootNode.get("date").asText();
 
@@ -55,9 +57,22 @@ public class EventService {
             // Based on these information we create an Event object that we store in the local map
             Event event = new Event(eventName, date, tables, menu);
             events.put(eventName, event);
+
+            System.out.println("Event " + eventName + " created or modified");
         }
         catch (Exception e){
             e.printStackTrace();
+        }
+    }
+
+    public String getEvent(String eventName){
+        // Create the json object corresponding to the event and returns it
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(events.get(eventName));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "{}";
         }
     }
 }

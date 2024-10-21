@@ -21,7 +21,4 @@ public class BffConfig {
 
     @ConfigProperty(name = "seats.per.table")
     int seatsPerTable;
-
-
-
 }

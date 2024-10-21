@@ -8,7 +8,11 @@ public class AppLifecycleBean {
     @Inject
     BFFService bffService;
 
+    @Inject
+    EventService eventService;
+
     void onStart(@Observes StartupEvent ev) {
         System.out.println("App started. BFFService HashCode: " + bffService.hashCode());
+        System.out.println("App started. EventService HashCode: " + eventService.hashCode());
     }
 }

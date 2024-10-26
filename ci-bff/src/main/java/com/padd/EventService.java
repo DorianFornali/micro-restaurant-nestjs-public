@@ -75,4 +75,15 @@ public class EventService {
             return "{}";
         }
     }
+
+    public String getAllEvents(){
+        // Create the json object corresponding to all the events and returns it
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(events);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "{}";
+        }
+    }
 }

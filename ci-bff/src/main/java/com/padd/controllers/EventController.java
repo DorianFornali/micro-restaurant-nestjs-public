@@ -35,4 +35,16 @@ public class EventController {
             return Response.status(Response.Status.NOT_FOUND).entity("Event not found").build();
         }
     }
+
+    @Path("/")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllEvents() {
+        String events = eventService.getAllEvents();
+        if (events != null) {
+            return Response.ok(events).build();
+        } else {
+            return Response.status(Response.Status.NOT_FOUND).entity("No events found").build();
+        }
+    }
 }

@@ -20,10 +20,14 @@ public class Event {
     @Getter
     private List<String> menu;
 
-    public Event(String eventName, String date, Map<String, List<String>> tables, List<String> menu) {
+    @Getter
+    private List<String> supplementItems;
+
+    public Event(String eventName, String date, Map<String, List<String>> tables, List<String> menu, List<String> supplementItemsIds) {
         this.eventName = eventName;
         this.date = date;
         this.tables = tables;
         this.menu = menu;
+        this.supplementItems = supplementItemsIds;
     }
 }

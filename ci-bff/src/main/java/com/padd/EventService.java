@@ -2,6 +2,7 @@ package com.padd;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.padd.bridge.BridgeToService;
 import com.padd.bridge.RestaurantService;
 import com.padd.model.event.Event;
@@ -59,8 +60,15 @@ public class EventService {
                 menu.add(menuItemNode.asText());
             }
 
+            // Then we get the supplement items, which is a list of supplementItemID
+            List<String> supplementItemsIds = new ArrayList<>();
+            JsonNode supplementItemsNode = rootNode.get("supplementItems");
+            for (JsonNode supplementItemNode : supplementItemsNode){
+                supplementItemsIds.add(supplementItemNode.asText());
+            }
+
             // Based on these information we create an Event object that we store in the local map
-            Event event = new Event(eventName, date, tables, menu);
+            Event event = new Event(eventName, date, tables, menu, supplementItemsIds);
             events.put(eventName, event);
 
             System.out.println("Event " + eventName + " created or modified");
@@ -94,11 +102,13 @@ public class EventService {
 
     /** Will build the menu for the event based on the menu items ids it has
      * Has to make one call per menu item id to the backend
-     * @return A json object corresponding to the event's menu */
+     * @return A json object corresponding to the event's menu qnd supplementItems */
     public String getEventMenu(String eventName) {
         Event event = events.get(eventName);
         List<String> menu = event.getMenu();
+        List<String> supplementItemsIds = event.getSupplementItems();
         List<JsonNode> menuItems = new ArrayList<>();
+        List<JsonNode> supplementItems = new ArrayList<>();
         ObjectMapper objectMapper = new ObjectMapper();
 
         for (String menuItemId : menu) {
@@ -112,11 +122,25 @@ public class EventService {
             }
         }
 
+        for (String supplementItemId : supplementItemsIds) {
+            try {
+                System.out.println("Fetching supplement item with id " + supplementItemId + " from backend");
+                String response = bridgeToService.httpGet(RestaurantService.MENU, "menus/" + supplementItemId);
+                JsonNode supplementItemNode = objectMapper.readTree(response);
+                supplementItems.add(supplementItemNode);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
         try {
-            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(menuItems);
+            ObjectNode result = objectMapper.createObjectNode();
+            result.set("menu", objectMapper.valueToTree(menuItems));
+            result.set("supplementItems", objectMapper.valueToTree(supplementItems));
+            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
         } catch (Exception e) {
             e.printStackTrace();
-            return "[]";
+            return "{}";
         }
     }
 

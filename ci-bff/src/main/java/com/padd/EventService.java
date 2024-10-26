@@ -2,6 +2,8 @@ package com.padd;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.padd.bridge.BridgeToService;
+import com.padd.bridge.RestaurantService;
 import com.padd.model.event.Event;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -16,9 +18,12 @@ public class EventService {
 
     private Map<String, Event> events = new HashMap<>();
 
+    private BridgeToService bridgeToService;
+
     @Inject
-    public EventService(){
+    public EventService(BridgeToService bridgeToService) {
         events = new HashMap<>();
+        this.bridgeToService = bridgeToService;
     }
 
     public void handleEventOperation(String body){
@@ -85,5 +90,37 @@ public class EventService {
             e.printStackTrace();
             return "{}";
         }
+    }
+
+    /** Will build the menu for the event based on the menu items ids it has
+     * Has to make one call per menu item id to the backend
+     * @return A json object corresponding to the event's menu */
+    public String getEventMenu(String eventName) {
+        Event event = events.get(eventName);
+        List<String> menu = event.getMenu();
+        List<JsonNode> menuItems = new ArrayList<>();
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        for (String menuItemId : menu) {
+            try {
+                System.out.println("Fetching menu item with id " + menuItemId + " from backend");
+                String response = bridgeToService.httpGet(RestaurantService.MENU, "menus/" + menuItemId);
+                JsonNode menuItemNode = objectMapper.readTree(response);
+                menuItems.add(menuItemNode);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        try {
+            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(menuItems);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "[]";
+        }
+    }
+
+    public boolean eventExists(String eventName){
+        return events.containsKey(eventName);
     }
 }

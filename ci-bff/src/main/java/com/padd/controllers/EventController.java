@@ -47,4 +47,21 @@ public class EventController {
             return Response.status(Response.Status.NOT_FOUND).entity("No events found").build();
         }
     }
+
+    @Path("/{name}/menu")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getEventMenu(@PathParam("name") String eventName) {
+        System.out.println("Received request for event menu");
+        if(!eventService.eventExists(eventName)){
+            return Response.status(Response.Status.NOT_FOUND).entity("Event not found").build();
+        }
+
+        String menu = eventService.getEventMenu(eventName);
+        if (menu != null) {
+            return Response.ok(menu).build();
+        } else {
+            return Response.status(Response.Status.NOT_FOUND).entity("Menu not found").build();
+        }
+    }
 }
